@@ -1,0 +1,11 @@
+{
+  "name": "vintage-club-studio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --dir \"Rg Store\" run dev",
+    "build": "pnpm --dir \"Rg Store\" run build",
+    "start": "pnpm --dir \"Rg Store\" run start",
+    "lint": "pnpm --dir \"Rg Store\" run lint"
+  }
+}

@@ -90,8 +90,294 @@ body {
 .site-enter {
   animation: siteEnter 1.1s ease-out both;
 }
+/* ------------------------------------------------------------------ */
+/* SFONDO DINAMICO DEL PRODOTTO                                       */
+/* Il fondo è il colore del capo in vetrina (bg_color del prodotto),   */
+/* arricchito da bande tonali chiaro/scuro e da una lastra centrale    */
+/* più chiara: mai piatto, sempre leggibile.                           */
+/* ------------------------------------------------------------------ */
+
+/* Tono corrente del prodotto: registrato come <color> così il cambio
+   di capo anima il fondo e il fumo in modo fluido.
+   Nota sulle prestazioni: la variabile viene impostata SOLO sui tre
+   elementi che la leggono (lastra, fumo e livelli di sfondo) e non sul
+   contenitore della pagina. Con il valore sull'intero albero, ogni
+   cambio di capo obbligava il browser a ricalcolare gli stili di tutte
+   le schede del catalogo per ogni frame dell'animazione. */
+@property --bg-c {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0d0f12;
+}
+
+/* VENATURE DI MARMO
+   Lo sfondo è una lastra del colore del capo e le strisce diventano
+   venature: filamenti morbidi, irregolari e incrociati (venature
+   principali chiare + venature scure di contrasto), così il fondo non
+   è mai piatto. Solo CSS: nessuna immagine. */
+.bg-marble {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* le venature si attenuano verso i bordi, dove sta l'interfaccia */
+  -webkit-mask-image: radial-gradient(
+    82% 64% at 50% 54%,
+    #000 0%,
+    transparent 88%
+  );
+  mask-image: radial-gradient(82% 64% at 50% 54%, #000 0%, transparent 88%);
+}
+
+/* Ogni livello è una "vena" della lastra, ruotata su un'angolazione
+   diversa: l'incrocio dei livelli crea il disegno naturale del marmo. */
+.bg-vein {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 190%;
+  height: 190%;
+  translate: -50% -50%;
+  will-change: transform;
+  animation: veinDrift 72s ease-in-out infinite alternate;
+}
+
+/* Venatura principale, nella stessa direzione delle vecchie bande */
+.bg-vein-a {
+  rotate: 112deg;
+  animation-duration: 64s;
+  background-image:
+    radial-gradient(
+      ellipse 44% 0.55% at 34% 34%,
+      rgba(255, 255, 255, 0.24) 0%,
+      rgba(255, 255, 255, 0.08) 48%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 30% 0.4% at 68% 44%,
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 16% 0.3% at 52% 21%,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 56% 0.5% at 48% 66%,
+      rgba(0, 0, 0, 0.22) 0%,
+      rgba(0, 0, 0, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 24% 0.36% at 76% 74%,
+      rgba(0, 0, 0, 0.16) 0%,
+      rgba(0, 0, 0, 0) 100%
+    );
+}
+
+/* Venatura secondaria: incrocia la principale, più tenue */
+.bg-vein-b {
+  rotate: 76deg;
+  animation-duration: 86s;
+  animation-direction: alternate-reverse;
+  opacity: 0.85;
+  background-image:
+    radial-gradient(
+      ellipse 38% 0.45% at 26% 58%,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 46% 0.5% at 66% 32%,
+      rgba(0, 0, 0, 0.18) 0%,
+      rgba(0, 0, 0, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 22% 0.32% at 44% 82%,
+      rgba(0, 0, 0, 0.14) 0%,
+      rgba(0, 0, 0, 0) 100%
+    );
+}
+
+/* Terzo filo, quasi parallelo al principale: dà spessore alla vena */
+.bg-vein-c {
+  rotate: 128deg;
+  animation-duration: 104s;
+  opacity: 0.7;
+  background-image:
+    radial-gradient(
+      ellipse 20% 0.3% at 58% 62%,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 34% 0.4% at 36% 76%,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 28% 0.34% at 72% 24%,
+      rgba(0, 0, 0, 0.16) 0%,
+      rgba(0, 0, 0, 0) 100%
+    );
+}
+
+/* Lastra: centro un po' più chiaro dietro il capo, bordi più profondi.
+   Il colore resta quello del prodotto: solo tonalità diverse, così il
+   fondo è sempre "prevalentemente" del colore del capo. */
+.bg-depth {
+  background:
+    radial-gradient(
+      58% 44% at 50% 54%,
+      color-mix(in srgb, var(--bg-c) 88%, #ffffff) 0%,
+      transparent 78%
+    ),
+    radial-gradient(
+      135% 105% at 50% 50%,
+      transparent 32%,
+      color-mix(in srgb, var(--bg-c) 40%, #05060a) 100%
+    );
+  transition: --bg-c 0.8s ease;
+}
+
+/* Velo in testa e in coda: tiene leggibili header, nome e comandi */
+.bg-scrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(4, 5, 10, 0.45) 0%,
+    rgba(4, 5, 10, 0.12) 16%,
+    transparent 34%,
+    transparent 72%,
+    rgba(4, 5, 10, 0.5) 100%
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* FUMO SOTTO IL PRODOTTO                                             */
+/* Nebbia neutra (grigio desaturato), attraversata dalla luce del      */
+/* dettaglio del capo: il colore illumina il fumo, non lo colora.      */
+/* ------------------------------------------------------------------ */
+@property --smoke-c {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #e8c98a;
+}
+
+/* Base: la lastra di nebbia occupa la metà bassa del palco e sta dietro
+   il capo (z-index sotto le immagini, che stanno a 30). */
+.smoke {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: min(94vw, 880px);
+  height: min(46vh, 420px);
+  z-index: 12;
+  transform: translateX(-50%);
+  pointer-events: none;
+  /* La nebbia si dissolve solo sul bordo esterno, con misure in
+     percentuale: prima usava "closest-side", che su una lastra larga
+     riduceva il raggio all'altezza e cancellava del tutto le volute
+     laterali (il fumo risultava invisibile). */
+  -webkit-mask-image: radial-gradient(
+    82% 68% at 50% 56%,
+    #000 0%,
+    rgba(0, 0, 0, 0.92) 40%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    82% 68% at 50% 56%,
+    #000 0%,
+    rgba(0, 0, 0, 0.92) 40%,
+    transparent 100%
+  );
+  transition: --smoke-c 0.8s ease, --bg-c 0.8s ease;
+}
+
+/* Faretto colorato: sta DIETRO al fumo (viene prima nel DOM) e lo
+   attraversa, accendendolo dal basso. Il colore arriva dai dettagli
+   del capo. */
+.smoke-light {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--smoke-c) 86%, #ffffff) 0%,
+    color-mix(in srgb, var(--smoke-c) 42%, transparent) 44%,
+    transparent 78%
+  );
+  filter: blur(46px);
+  opacity: 0.55;
+}
+
+/* Nucleo: il punto in cui la luce è più densa, piccolo e mai bianco
+   pieno (evita l'effetto "alone finto"). */
+.smoke-core {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--smoke-c) 62%, #ffffff) 0%,
+    color-mix(in srgb, var(--smoke-c) 46%, transparent) 48%,
+    transparent 82%
+  );
+  filter: blur(30px);
+  opacity: 0.42;
+}
+
+/* Volute di nebbia NEUTRA: grigio desaturato appena velato dal tono del
+   capo, così la nuvola si legge sia sui fondi chiari sia su quelli
+   scuri. Il colore lo porta la luce che sta dietro, non la nebbia. */
+.smoke-puff {
+  position: absolute;
+  border-radius: 50%;
+  --fog: color-mix(in srgb, var(--bg-c) 26%, #c9ccd3);
+  background: radial-gradient(
+    circle at 50% 56%,
+    color-mix(in srgb, #ffffff 30%, var(--fog)) 0%,
+    color-mix(in srgb, var(--fog) 52%, transparent) 44%,
+    transparent 78%
+  );
+  filter: blur(30px);
+  opacity: 0.42;
+  will-change: transform;
+  animation: smokeDrift 26s ease-in-out infinite;
+}
+.smoke-puff-2 {
+  opacity: 0.32;
+  animation-duration: 34s;
+  animation-delay: -8s;
+}
+.smoke-puff-3 {
+  opacity: 0.24;
+  animation-duration: 44s;
+  animation-delay: -16s;
+}
+
+/* Le venature scorrono lentissime, come la luce su una lastra levigata */
+@keyframes veinDrift {
+  0%,
+  100% {
+    transform: translate3d(-1.4%, -0.7%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(1.4%, 0.9%, 0) scale(1.04);
+  }
+}
+
+@keyframes smokeDrift {
+  0%,
+  100% {
+    transform: translate3d(-2.5%, 1%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(2.5%, -3.5%, 0) scale(1.16);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .site-enter {
+  .site-enter,
+  .bg-vein,
+  .smoke-puff {
     animation: none;
   }
 }

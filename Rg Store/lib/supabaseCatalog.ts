@@ -74,10 +74,10 @@ export const CONTACT_DEFAULTS: ContactRow = {
   title: "Parliamo del tuo ordine.",
   description:
     "Domande su taglie, disponibilità o spedizioni? Scrivici: rispondiamo entro 24 ore, dal lunedì al sabato.",
-  email: "info@rgstore.it",
+  email: "info@vintageclubstudio.it",
   whatsapp_number: "393450000000",
   whatsapp_display: "+39 345 000 0000",
-  instagram: "@rg.store",
+  instagram: "@vintageclubstudio",
   address: "Showroom · Milano, Italia",
   maps_embed_url:
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2798.118670876798!2d9.19154381555894!3d45.46944367910103!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4786c6b4fa7bfa77%3A0xb35e67046e7f2231!2sVia%20Monte%20Napoleone%2C%2020121%20Milano%20MI!5e0!3m2!1sit!2sit!4v1659000000000!5m2!1sit!2sit",
@@ -91,26 +91,24 @@ const LAYOUT: Record<
   string,
   { centerScale: number; boxW: number; boxH: number; mobileBoxW: number; mobileBoxH: number }
 > = {
-  cinture: { centerScale: 1.75, boxW: 340, boxH: 260, mobileBoxW: 230, mobileBoxH: 200 },
-  scarpe: { centerScale: 1.9, boxW: 320, boxH: 360, mobileBoxW: 250, mobileBoxH: 280 },
-  profumi: { centerScale: 2.8, boxW: 280, boxH: 460, mobileBoxW: 230, mobileBoxH: 330 },
+  maglie: { centerScale: 1.6, boxW: 320, boxH: 380, mobileBoxW: 250, mobileBoxH: 300 },
+  completi: { centerScale: 1.5, boxW: 340, boxH: 420, mobileBoxW: 260, mobileBoxH: 330 },
+  pantaloni: { centerScale: 1.6, boxW: 300, boxH: 420, mobileBoxW: 240, mobileBoxH: 330 },
 };
 
 const CATEGORY_INDEX: Record<string, number> = {
-  cinture: 1,
-  scarpe: 2,
-  profumi: 3,
+  maglie: 1,
+  completi: 2,
+  pantaloni: 3,
 };
 
-const priceLabelFor = (catId: string) => (v: string) =>
-  catId === "profumi"
-    ? `Flacone ${v}ml`
-    : catId === "cinture"
-      ? `Taglia ${v} cm`
-      : `Taglia ${v}`;
+// Watermark del brand mostrato dietro i prodotti.
+const WATERMARK = "VINTAGE";
 
-// Scala animazione profumi: deriva dal moltiplicatore prezzo
-// (1 → 1, 1.8 → 1.08, 2.8 → 1.18), come nel vecchio catalogo statico.
+const priceLabelFor = (_catId: string) => (v: string) => `Taglia ${v}`;
+
+// Scala dell'animazione: deriva dal moltiplicatore prezzo
+// (1 → 1, 1.8 → 1.08, 2.8 → 1.18), come nel catalogo statico.
 const scaleFromMultiplier = (m: number) => 1 + (m - 1) * 0.1;
 
 const toRuntimeVariant = (v: VariantRow): RuntimeVariant => ({
@@ -176,11 +174,11 @@ export function buildCatalog(data: CatalogData): BuiltCatalog {
   const categories: RuntimeCategory[] = [...data.categories]
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((cat) => {
-      const layout = LAYOUT[cat.id] ?? LAYOUT.scarpe;
+      const layout = LAYOUT[cat.id] ?? LAYOUT.maglie;
       return {
         id: cat.id,
         label: cat.label,
-        watermark: "RG STORE",
+        watermark: WATERMARK,
         ...layout,
         priceLabel: priceLabelFor(cat.id),
         products: data.products
@@ -198,7 +196,7 @@ export function buildCatalog(data: CatalogData): BuiltCatalog {
       targetIndex: c.target_category
         ? CATEGORY_INDEX[c.target_category] ?? 1
         : 0,
-      crop: c.target_category === "profumi",
+      crop: false,
     }));
 
   return { categories, homeCards, contacts: data.contacts };
@@ -211,7 +209,7 @@ export function buildStaticCatalog(): BuiltCatalog {
   const categories: RuntimeCategory[] = CATALOG.map((cat) => ({
     id: cat.id,
     label: cat.label,
-    watermark: "RG STORE",
+    watermark: WATERMARK,
     centerScale: cat.centerScale,
     boxW: cat.boxW,
     boxH: cat.boxH,

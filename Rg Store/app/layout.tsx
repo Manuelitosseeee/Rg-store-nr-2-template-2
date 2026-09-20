@@ -23,9 +23,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Rg Store — Scarpe, Cinture & Profumi",
+  title: "Vintage Club Studio — Maglie, Completi & Pantaloni",
   description:
-    "Rg Store: la selezione 3D di scarpe, cinture e profumi di lusso.",
+    "Vintage Club Studio: la selezione 3D di maglie, completi e pantaloni vintage.",
 };
 
 export default function RootLayout({

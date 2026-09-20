@@ -1,9 +1,9 @@
 -- ============================================================
--- RG STORE — Setup database + dati iniziali
+-- VINTAGE CLUB STUDIO — Setup database + dati iniziali
 -- Esegui tutto in un colpo solo: SQL Editor -> New query -> Run
 -- ============================================================
 
--- 1) CATEGORIE PRODOTTO (sezioni: cinture, scarpe, profumi)
+-- 1) CATEGORIE PRODOTTO (sezioni: maglie, completi, pantaloni)
 create table if not exists public.categories (
   id text primary key,
   label text not null,
@@ -113,122 +113,73 @@ create policy "store_eliminazione_admin" on storage.objects for delete to authen
 -- DATI INIZIALI (il catalogo attuale del sito)
 -- ============================================================
 insert into public.categories (id, label, sort_order) values
-  ('cinture', 'Cinture', 1),
-  ('scarpe', 'Scarpe', 2),
-  ('profumi', 'Profumi', 3)
+  ('maglie', 'Maglie', 1),
+  ('completi', 'Completi', 2),
+  ('pantaloni', 'Pantaloni', 3)
 on conflict (id) do nothing;
 
 insert into public.home_cards (id, title, image_url, target_category, sort_order) values
-  ('home-cinture',  'CINTURE',  '/store/Louis_Vuitton_Monogram-removebg-preview.png',  'cinture',  1),
-  ('home-scarpe',   'SCARPE',   '/store/Air_Jordan_4_White_Cement-removebg-preview.png', 'scarpe',   2),
-  ('home-profumi',  'PROFUMI',  '/store/Creed_Aventus-removebg-preview.png',             'profumi',  3)
+  ('home-maglie',    'MAGLIE',    '/vintage/maglia-1.png',    'maglie',    1),
+  ('home-completi',  'COMPLETI',  '/vintage/completo-2.png',  'completi',  2),
+  ('home-pantaloni', 'PANTALONI', '/vintage/pantalone-4.png', 'pantaloni', 3)
 on conflict (id) do nothing;
 
 insert into public.products (id, category, name, subtitle, description, price, image_url, bg_color, accent_color, sort_order) values
-  ('aj4-black-cat',       'scarpe',  'Air Jordan 4 «Black Cat»',       'Stealth Leather',      'Total black in pelle. Il look stealth, al massimo della pulizia.',            130, '/store/Air_Jordan_4_Black_Cat-removebg-preview.png',        '#17171a', '#8a8f98', 1),
-  ('aj4-bred',            'scarpe',  'Air Jordan 4 «Bred»',            'Classic Black & Red',  'Il classico black & red che ha scritto la storia delle Jordan.',            120, '/store/Air_Jordan_4_Bred-removebg-preview.png',             '#3a1016', '#e63946', 2),
-  ('aj4-military-blue',   'scarpe',  'Air Jordan 4 «Military Blue»',   'Heritage Retro',       'Blu militare su tomaia bianca: il ritorno di una leggenda del 1989.',        125, '/store/Air_Jordan_4_Military_Blue-removebg-preview.png',    '#14263d', '#457b9d', 3),
-  ('aj4-lightning',       'scarpe',  'Air Jordan 4 «Retro Lightning»', 'Electric Yellow',      'Giallo elettrico e dettagli neri: energia pura, da collezione.',             135, '/store/Air_Jordan_4_Retro_Lightning-removebg-preview.png',  '#3d310f', '#f4d03f', 4),
-  ('aj4-white-cement',    'scarpe',  'Air Jordan 4 «White Cement»',    'OG 1989',              'L''originale del 1989. Bianco, cemento e dettagli senza tempo.',             140, '/store/Air_Jordan_4_White_Cement-removebg-preview.png',     '#23252b', '#e8e6e1', 5),
+  ('maglia-1',      'maglie',    'Maglia 1',      'Rosso',           'Maglia rossa dal taglio vintage: colore pieno e finiture a contrasto.',        39.9, '/vintage/maglia-1.png',     '#5e1622', '#d9414f', 1),
+  ('maglia-2',      'maglie',    'Maglia 2',      'Nero',            'Maglia scura essenziale: base nera, taglio pulito, stile da club.',            39.9, '/vintage/maglia-2.png',     '#33333c', '#a8b0c0', 2),
+  ('maglia-3',      'maglie',    'Maglia 3',      'Blu',             'Maglia blu profondo, ispirata alle casacche vintage.',                         39.9, '/vintage/maglia-3.png',     '#0f3f8c', '#3878e0', 3),
+  ('maglia-4',      'maglie',    'Maglia 4',      'Verde petrolio',  'Maglia verde petrolio, tinta piena e dettagli ridotti all''essenziale.',        39.9, '/vintage/maglia-4.png',     '#0f564f', '#1fae97', 4),
 
-  ('creed-aventus',       'profumi', 'Creed Aventus',                  'Eau de Parfum',        'Ambra, muschio e bergamotto. Il profumo del successo.',                      60, '/store/Creed_Aventus-removebg-preview.png',                 '#142b22', '#2a9d8f', 1),
-  ('gucci-guilty',        'profumi', 'Gucci Guilty',                   'Eau de Parfum',        'Rosa, lavanda e cedro: audace e sensuale.',                                  65, '/store/Gucci_Guilty-removebg-preview.png',                  '#2b1526', '#e76f51', 2),
-  ('jpg-le-male-elixir',  'profumi', 'Jean Paul Gaultier Le Male Elixir', 'Elixir Intense',   'Vaniglia, miele e lavanda: magnetico e intenso.',                            70, '/store/Jean_Paul_Gaultier_le_male_elixir-removebg-preview.png', '#1b2740', '#6ba8d6', 3),
-  ('tom-ford',            'profumi', 'Tom Ford',                       'Eau de Parfum',        'Legni pregiati e note orientali: pura eleganza.',                            75, '/store/Tom_Ford-removebg-preview.png',                      '#20160c', '#c9a25e', 4),
-  ('one-million',         'profumi', 'One Million',                    'Eau de Toilette',      'Cuoio, cannella e ambra: ricco e inconfondibile.',                           80, '/store/One_Million-removebg-preview.png',                   '#2e1d12', '#d4af37', 5),
+  ('completo-1',    'completi',  'Completo 1',    'Chiaro',          'Completo chiaro con dettagli rossi: maglia e pantalone abbinati.',             89.9, '/vintage/completo-1.png',   '#ddd6df', '#cf4759', 1),
+  ('completo-2',    'completi',  'Completo 2',    'Blu & Giallo',    'Completo blu con dettagli gialli, il classico da trasferta.',                  89.9, '/vintage/completo-2.png',   '#1c3e68', '#d8c24f', 2),
+  ('completo-3',    'completi',  'Completo 3',    'Viola',           'Completo viola intenso, maglia e pantalone coordinati.',                       89.9, '/vintage/completo-3.png',   '#463065', '#9061d6', 3),
+  ('completo-4',    'completi',  'Completo 4',    'Nero',            'Completo nero con dettagli rosa antico.',                                      89.9, '/vintage/completo-4.png',   '#26212a', '#bb7d95', 4),
 
-  ('lv-monogram',         'cinture', 'Louis Vuitton Monogram',         'Monogram Canvas',      'Tela monogram iconica e fibbia in metallo dorato.',                          70, '/store/Louis_Vuitton_Monogram-removebg-preview.png',        '#2b2413', '#d4af37', 1),
-  ('ferragamo-gancini',   'cinture', 'Ferragamo Gancini',              'Gancini Leather',      'Pelle pregiata e fibbia Gancini, il simbolo della maison.',                  75, '/store/Ferragamo_Gancini-removebg-preview.png',             '#261c12', '#b08d57', 2),
-  ('hermes-h',            'cinture', 'Hermès H',                       'H Buckle',             'La fibbia «H» in metallo: sobria, elegante, eterna.',                        80, '/store/Hermes_H-removebg-preview.png',                      '#1d2b21', '#e07a5f', 3),
-  ('versace-medusa',      'cinture', 'Versace Medusa',                 'Medusa Metal',         'Medusa in rilievo: audacia e carattere.',                                   85, '/store/Versace_Medusa-removebg-preview.png',                '#1f1424', '#c0b283', 4),
-  ('dior-oblique',        'cinture', 'Dior Oblique',                   'Oblique Jacquard',     'Motivo Oblique ricamato: lusso discreto, stile puro.',                      90, '/store/Dior_Oblique-removebg-preview.png',                  '#101926', '#7f8ea3', 5)
+  ('pantalone-1',   'pantaloni', 'Pantalone 1',   'Rosso',           'Pantalone rosso dal taglio vintage.',                                          44.9, '/vintage/pantalone-1.png',  '#5a1019', '#d9414f', 1),
+  ('pantalone-2',   'pantaloni', 'Pantalone 2',   'Antracite',       'Pantalone antracite, essenziale e senza tempo.',                               44.9, '/vintage/pantalone-2.png',  '#2b2530', '#a4596a', 2),
+  ('pantalone-3',   'pantaloni', 'Pantalone 3',   'Blu navy',        'Pantalone blu navy con dettagli rossi.',                                       44.9, '/vintage/pantalone-3.png',  '#1f2644', '#bc4150', 3),
+  ('pantalone-4',   'pantaloni', 'Pantalone 4',   'Chiaro',          'Pantalone chiaro, da abbinare alla maglia.',                                   44.9, '/vintage/pantalone-4.png',  '#d9d2dd', '#c84a5c', 4)
 on conflict (id) do nothing;
 
-insert into public.variants (id, product_id, label, multiplier, sort_order) values
-  -- Scarpe (taglie)
-  ('aj4-black-cat-40',      'aj4-black-cat',      '40', 1, 1),
-  ('aj4-black-cat-41',      'aj4-black-cat',      '41', 1, 2),
-  ('aj4-black-cat-42',      'aj4-black-cat',      '42', 1, 3),
-  ('aj4-black-cat-43',      'aj4-black-cat',      '43', 1, 4),
-  ('aj4-black-cat-44',      'aj4-black-cat',      '44', 1, 5),
-  ('aj4-black-cat-45',      'aj4-black-cat',      '45', 1, 6),
-  ('aj4-bred-40',           'aj4-bred',           '40', 1, 1),
-  ('aj4-bred-41',           'aj4-bred',           '41', 1, 2),
-  ('aj4-bred-42',           'aj4-bred',           '42', 1, 3),
-  ('aj4-bred-43',           'aj4-bred',           '43', 1, 4),
-  ('aj4-bred-44',           'aj4-bred',           '44', 1, 5),
-  ('aj4-bred-45',           'aj4-bred',           '45', 1, 6),
-  ('aj4-military-blue-40',  'aj4-military-blue',  '40', 1, 1),
-  ('aj4-military-blue-41',  'aj4-military-blue',  '41', 1, 2),
-  ('aj4-military-blue-42',  'aj4-military-blue',  '42', 1, 3),
-  ('aj4-military-blue-43',  'aj4-military-blue',  '43', 1, 4),
-  ('aj4-military-blue-44',  'aj4-military-blue',  '44', 1, 5),
-  ('aj4-military-blue-45',  'aj4-military-blue',  '45', 1, 6),
-  ('aj4-lightning-40',      'aj4-lightning',      '40', 1, 1),
-  ('aj4-lightning-41',      'aj4-lightning',      '41', 1, 2),
-  ('aj4-lightning-42',      'aj4-lightning',      '42', 1, 3),
-  ('aj4-lightning-43',      'aj4-lightning',      '43', 1, 4),
-  ('aj4-lightning-44',      'aj4-lightning',      '44', 1, 5),
-  ('aj4-lightning-45',      'aj4-lightning',      '45', 1, 6),
-  ('aj4-white-cement-40',   'aj4-white-cement',   '40', 1, 1),
-  ('aj4-white-cement-41',   'aj4-white-cement',   '41', 1, 2),
-  ('aj4-white-cement-42',   'aj4-white-cement',   '42', 1, 3),
-  ('aj4-white-cement-43',   'aj4-white-cement',   '43', 1, 4),
-  ('aj4-white-cement-44',   'aj4-white-cement',   '44', 1, 5),
-  ('aj4-white-cement-45',   'aj4-white-cement',   '45', 1, 6),
-  -- Cinture (taglie)
-  ('lv-monogram-85',        'lv-monogram',        '85',  1, 1),
-  ('lv-monogram-90',        'lv-monogram',        '90',  1, 2),
-  ('lv-monogram-95',        'lv-monogram',        '95',  1, 3),
-  ('lv-monogram-100',       'lv-monogram',        '100', 1, 4),
-  ('lv-monogram-105',       'lv-monogram',        '105', 1, 5),
-  ('ferragamo-gancini-85',  'ferragamo-gancini',  '85',  1, 1),
-  ('ferragamo-gancini-90',  'ferragamo-gancini',  '90',  1, 2),
-  ('ferragamo-gancini-95',  'ferragamo-gancini',  '95',  1, 3),
-  ('ferragamo-gancini-100', 'ferragamo-gancini',  '100', 1, 4),
-  ('ferragamo-gancini-105', 'ferragamo-gancini',  '105', 1, 5),
-  ('hermes-h-85',           'hermes-h',           '85',  1, 1),
-  ('hermes-h-90',           'hermes-h',           '90',  1, 2),
-  ('hermes-h-95',           'hermes-h',           '95',  1, 3),
-  ('hermes-h-100',          'hermes-h',           '100', 1, 4),
-  ('hermes-h-105',          'hermes-h',           '105', 1, 5),
-  ('versace-medusa-85',     'versace-medusa',     '85',  1, 1),
-  ('versace-medusa-90',     'versace-medusa',     '90',  1, 2),
-  ('versace-medusa-95',     'versace-medusa',     '95',  1, 3),
-  ('versace-medusa-100',    'versace-medusa',     '100', 1, 4),
-  ('versace-medusa-105',    'versace-medusa',     '105', 1, 5),
-  ('dior-oblique-85',       'dior-oblique',       '85',  1, 1),
-  ('dior-oblique-90',       'dior-oblique',       '90',  1, 2),
-  ('dior-oblique-95',       'dior-oblique',       '95',  1, 3),
-  ('dior-oblique-100',      'dior-oblique',       '100', 1, 4),
-  ('dior-oblique-105',      'dior-oblique',       '105', 1, 5),
-  -- Profumi (formati)
-  ('creed-aventus-15',      'creed-aventus',      '15', 1,   1),
-  ('creed-aventus-30',      'creed-aventus',      '30', 1.8, 2),
-  ('creed-aventus-50',      'creed-aventus',      '50', 2.8, 3),
-  ('gucci-guilty-15',       'gucci-guilty',       '15', 1,   1),
-  ('gucci-guilty-30',       'gucci-guilty',       '30', 1.8, 2),
-  ('gucci-guilty-50',       'gucci-guilty',       '50', 2.8, 3),
-  ('jpg-le-male-elixir-15', 'jpg-le-male-elixir', '15', 1,   1),
-  ('jpg-le-male-elixir-30', 'jpg-le-male-elixir', '30', 1.8, 2),
-  ('jpg-le-male-elixir-50', 'jpg-le-male-elixir', '50', 2.8, 3),
-  ('tom-ford-15',           'tom-ford',           '15', 1,   1),
-  ('tom-ford-30',           'tom-ford',           '30', 1.8, 2),
-  ('tom-ford-50',           'tom-ford',           '50', 2.8, 3),
-  ('one-million-15',        'one-million',        '15', 1,   1),
-  ('one-million-30',        'one-million',        '30', 1.8, 2),
-  ('one-million-50',        'one-million',        '50', 2.8, 3)
+-- Taglie S / M / L / XL generate per ogni capo del catalogo
+insert into public.variants (id, product_id, label, multiplier, sort_order)
+select p.id || '-' || lower(t.label), p.id, t.label, 1, t.sort_order
+from public.products p
+cross join (values ('S', 1), ('M', 2), ('L', 3), ('XL', 4)) as t(label, sort_order)
+where p.category in ('maglie', 'completi', 'pantaloni')
 on conflict (id) do nothing;
 
 insert into public.contacts (id, title, description, email, whatsapp_number, whatsapp_display, instagram, address, maps_embed_url, cta_label) values
   (1,
    'Parliamo del tuo ordine.',
    'Domande su taglie, disponibilità o spedizioni? Scrivici: rispondiamo entro 24 ore, dal lunedì al sabato.',
-   'info@rgstore.it',
+   'info@vintageclubstudio.it',
    '393450000000',
    '+39 345 000 0000',
-   '@rg.store',
+   '@vintageclubstudio',
    'Showroom · Milano, Italia',
    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2798.118670876798!2d9.19154381555894!3d45.46944367910103!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4786c6b4fa7bfa77%3A0xb35e67046e7f2231!2sVia%20Monte%20Napoleone%2C%2020121%20Milano%20MI!5e0!3m2!1sit!2sit!4v1659000000000!5m2!1sit!2sit',
    'Scrivici su WhatsApp')
 on conflict (id) do nothing;
+
+-- ============================================================
+-- PULIZIA DEL VECCHIO CATALOGO (RG Store: cinture, scarpe, profumi)
+-- Cancella solo le sezioni del vecchio store: prodotti, taglie e card
+-- della home collegate vengono rimossi in automatico (ON DELETE CASCADE).
+-- Commenta questo blocco se preferisci conservare i dati precedenti.
+-- ============================================================
+delete from public.categories where id in ('cinture', 'scarpe', 'profumi');
+
+-- I contatti già presenti vengono riallineati al nuovo brand
+update public.contacts
+   set email = 'info@vintageclubstudio.it',
+       instagram = '@vintageclubstudio'
+ where id = 1;
+
+-- ============================================================
+-- IMMAGINI DEI CAPI
+-- Le immagini del nuovo store sono servite dai file statici del sito
+-- (/public/vintage): maglia-1..4, completo-1..4, pantalone-1..4.
+-- Per gestirle dal pannello Admin basta caricarle nel bucket "store"
+-- e aggiornare il campo image_url del prodotto.
+-- ============================================================

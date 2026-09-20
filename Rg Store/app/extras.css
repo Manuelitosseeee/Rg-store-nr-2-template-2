@@ -1,0 +1,559 @@
+/* ==================================================================== */
+/* TEMPORANEO — Catalogo Classico, scheda prodotto, 5 sfondi            */
+/*                                                                      */
+/* Questo file esiste SOLO per le funzioni di prova. Per tornare        */
+/* indietro: cancella questo file + app/extras.tsx + lib/extras.ts e    */
+/* togli i due import in app/page.tsx e lib/catalog.ts (vedi            */
+/* EXTRAS-TEMPORANEE.md).                                               */
+/* ==================================================================== */
+
+/* -------------------------------------------------------------------- */
+/* CATALOGO CLASSICO — design unico: Noir Éditorial                     */
+/* Token di sfondo, superfici, testo, forme, ombre e font.               */
+/* -------------------------------------------------------------------- */
+.ct-root {
+  --ct-bg: #0a0a0b;
+  --ct-fg: #f4f1ea;
+  --ct-muted: rgba(244, 241, 234, 0.55);
+  --ct-surface: #131316;
+  --ct-accent: #e3cf9c;
+  --ct-hairline: rgba(244, 241, 234, 0.16);
+  --ct-radius: 0px;
+  --ct-media-radius: 0px;
+  --ct-media-aspect: 1 / 1;
+  --ct-media-bg: #191a1e;
+  --ct-border: 1px solid rgba(244, 241, 234, 0.16);
+  --ct-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+  --ct-glow: 0 0 0 1px rgba(227, 207, 156, 0.4);
+  --ct-font-title: var(--font-playfair), Georgia, serif;
+  --ct-font-body: var(--font-inter), Inter, sans-serif;
+  --ct-title-transform: none;
+  --ct-title-tracking: 0.01em;
+  --ct-title-weight: 500;
+  --ct-cols: 4;
+  --ct-cols-sm: 2;
+  --ct-gap: 24px;
+  --ct-pad: 14px;
+  --ct-btn-bg: transparent;
+  --ct-btn-fg: #f4f1ea;
+  --ct-btn-radius: 0px;
+  --ct-btn-border: 1px solid rgba(244, 241, 234, 0.35);
+  --ct-btn-shadow: none;
+  --ct-vein-1: rgba(227, 207, 156, 0.22);
+  --ct-vein-2: rgba(255, 255, 255, 0.12);
+  --ct-vein-3: rgba(0, 0, 0, 0.35);
+
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--ct-bg);
+  color: var(--ct-fg);
+  font-family: var(--ct-font-body);
+}
+
+.ct-veins {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(84% 66% at 50% 50%, #000 0%, transparent 90%);
+  mask-image: radial-gradient(84% 66% at 50% 50%, #000 0%, transparent 90%);
+}
+
+.ct-vein {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 190%;
+  height: 190%;
+  translate: -50% -50%;
+  background-image:
+    radial-gradient(
+      ellipse 42% 0.5% at 30% 32%,
+      var(--ct-vein-1) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 34% 0.42% at 66% 48%,
+      var(--ct-vein-2) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 26% 0.34% at 20% 74%,
+      var(--ct-vein-1) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 48% 0.46% at 58% 76%,
+      var(--ct-vein-3) 0%,
+      transparent 100%
+    );
+}
+.ct-vein-a {
+  rotate: 112deg;
+}
+.ct-vein-b {
+  rotate: 68deg;
+  opacity: 0.7;
+}
+.ct-vein-c {
+  rotate: 136deg;
+  opacity: 0.5;
+}
+
+.ct-shell {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ct-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 84px 20px 14px;
+  border-bottom: 1px solid var(--ct-hairline);
+}
+@media (min-width: 768px) {
+  .ct-top {
+    padding: 96px 44px 18px;
+  }
+}
+
+.ct-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ct-muted);
+}
+
+.ct-heading {
+  font-family: var(--ct-font-title);
+  text-transform: var(--ct-title-transform);
+  letter-spacing: var(--ct-title-tracking);
+  font-size: clamp(22px, 4vw, 40px);
+  line-height: 1.05;
+  margin-top: 6px;
+}
+
+.ct-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ct-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 22px 20px 130px;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 768px) {
+  .ct-scroll {
+    padding: 26px 44px 90px;
+  }
+}
+
+.ct-group + .ct-group {
+  margin-top: 36px;
+}
+
+.ct-group-title {
+  font-family: var(--ct-font-title);
+  text-transform: var(--ct-title-transform);
+  letter-spacing: var(--ct-title-tracking);
+  font-size: 15px;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--ct-hairline);
+}
+
+.ct-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--ct-cols-sm), minmax(0, 1fr));
+  gap: var(--ct-gap);
+  align-items: stretch;
+}
+@media (min-width: 768px) {
+  .ct-grid {
+    grid-template-columns: repeat(var(--ct-cols), minmax(0, 1fr));
+  }
+}
+
+.ct-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: var(--ct-pad);
+  background: var(--ct-surface);
+  border: var(--ct-border);
+  border-radius: var(--ct-radius);
+  box-shadow: var(--ct-shadow);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ct-card:hover {
+  transform: translateY(-4px);
+}
+
+/* La lastra dell'immagine è cliccabile: apre la scheda ingrandita */
+.ct-media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  flex: none;
+  aspect-ratio: var(--ct-media-aspect);
+  border-radius: var(--ct-media-radius);
+  background: var(--ct-media-bg);
+  overflow: hidden;
+  cursor: pointer;
+}
+.ct-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6%;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ct-media:hover img {
+  transform: scale(1.06);
+}
+.ct-media-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  translate: -50% 0;
+  padding: 5px 10px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ct-fg);
+  background: rgba(10, 10, 11, 0.72);
+  border: 1px solid var(--ct-hairline);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.ct-media:hover .ct-media-hint {
+  opacity: 1;
+}
+/* Su touch non esiste l'hover: il suggerimento resta sempre visibile */
+@media (hover: none) {
+  .ct-media-hint {
+    opacity: 1;
+  }
+}
+
+.ct-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.ct-name {
+  font-family: var(--ct-font-title);
+  text-transform: var(--ct-title-transform);
+  letter-spacing: var(--ct-title-tracking);
+  font-weight: var(--ct-title-weight);
+  font-size: 14px;
+  line-height: 1.2;
+  /* Due righe sempre riservate: con nomi lunghi ("Maglia 1 copia 2") le
+     schede affiancate restano perfettamente allineate. */
+  min-height: 2.4em;
+}
+
+.ct-sub {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ct-muted);
+}
+
+.ct-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 8px;
+  min-width: 0;
+}
+
+.ct-price {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ct-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-family: var(--ct-font-body);
+  background: var(--ct-btn-bg);
+  color: var(--ct-btn-fg);
+  border: var(--ct-btn-border);
+  border-radius: var(--ct-btn-radius);
+  box-shadow: var(--ct-btn-shadow);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s;
+}
+.ct-btn:hover {
+  transform: translateY(-2px);
+}
+.ct-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Su schermi stretti le due colonne sono molto vicine: il piede della
+   scheda va in colonna, così il tasto non esce più dal riquadro. */
+@media (max-width: 767px) {
+  .ct-foot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .ct-btn {
+    width: 100%;
+    padding: 10px 8px;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+  .ct-price {
+    font-size: 14px;
+    text-align: center;
+  }
+}
+
+/* -------------------------------------------------------------------- */
+/* SCHEDA PRODOTTO INGRANDITA (click sull'oggetto)                      */
+/* -------------------------------------------------------------------- */
+.ct-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* In basso lascio spazio alla barra di navigazione mobile, che sta
+     sopra la scheda e altrimenti coprirebbe il tasto Aggiungi. */
+  padding: 16px 16px 84px;
+}
+@media (min-width: 768px) {
+  .ct-modal {
+    padding: 24px;
+  }
+}
+.ct-modal-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 4, 5, 0.84);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  animation: ctFade 0.3s ease both;
+}
+.ct-modal-card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: min(940px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: var(--ct-surface);
+  border: var(--ct-border);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.65);
+  animation: ctRise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (min-width: 768px) {
+  .ct-modal-card {
+    flex-direction: row;
+  }
+}
+.ct-modal-media {
+  position: relative;
+  flex: 1 1 46%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  background: var(--ct-media-bg);
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .ct-modal-media {
+    aspect-ratio: auto;
+  }
+}
+.ct-modal-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 5%;
+}
+.ct-modal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 54%;
+  padding: 26px 22px 26px;
+}
+@media (min-width: 768px) {
+  .ct-modal-info {
+    padding: 34px 32px 32px;
+  }
+}
+.ct-modal-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ct-muted);
+}
+.ct-modal-name {
+  font-family: var(--ct-font-title);
+  text-transform: var(--ct-title-transform);
+  letter-spacing: var(--ct-title-tracking);
+  font-weight: var(--ct-title-weight);
+  font-size: clamp(24px, 3.6vw, 38px);
+  line-height: 1.08;
+}
+.ct-modal-desc {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ct-muted);
+}
+.ct-modal-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 14px;
+}
+.ct-modal-price {
+  font-size: 24px;
+  font-weight: 600;
+}
+.ct-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ct-fg);
+  background: rgba(10, 10, 11, 0.6);
+  border: 1px solid var(--ct-hairline);
+  cursor: pointer;
+}
+.ct-modal-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+@keyframes ctFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ctRise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* -------------------------------------------------------------------- */
+/* FUMO — unico tipo rimasto: "Vortice"                                 */
+/* Le regole usano [data-smoke] (attributo sempre presente) così hanno   */
+/* la precedenza sulle regole base del fumo in globals.css.              */
+/* -------------------------------------------------------------------- */
+[data-smoke] .smoke {
+  top: 48%;
+  left: 50%;
+  width: min(92vw, 840px);
+  height: min(54vh, 500px);
+  z-index: 12;
+}
+
+[data-smoke] .smoke-puff {
+  left: 2%;
+  bottom: -4%;
+  width: 68%;
+  height: 74%;
+  opacity: 0.55;
+  filter: blur(34px);
+  animation-duration: 16s;
+}
+[data-smoke] .smoke-puff-2 {
+  left: 22%;
+  right: auto;
+  bottom: 4%;
+  width: 62%;
+  height: 70%;
+  opacity: 0.48;
+  filter: blur(30px);
+  animation-duration: 19s;
+}
+[data-smoke] .smoke-puff-3 {
+  left: 12%;
+  right: auto;
+  bottom: -12%;
+  width: 80%;
+  height: 80%;
+  opacity: 0.38;
+  filter: blur(38px);
+  animation-duration: 23s;
+}
+[data-smoke] .smoke-light {
+  inset: 2% 0% 0% 0%;
+  opacity: 0.75;
+  filter: blur(52px);
+}
+[data-smoke] .smoke-core {
+  left: 32%;
+  right: 32%;
+  bottom: 8%;
+  height: 46%;
+  opacity: 0.6;
+}
+
+/* Su mobile il capo e i comandi stanno più in basso: tengo il fumo più
+   basso e corto, così resta sotto il prodotto senza salire sopra i
+   comandi (taglie, prezzo, Aggiungi). */
+@media (max-width: 767px) {
+  [data-smoke] .smoke {
+    max-height: 34vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ct-card,
+  .ct-btn {
+    transition: none;
+  }
+}

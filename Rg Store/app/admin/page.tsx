@@ -12,13 +12,13 @@ import type {
   VariantRow,
 } from "@/lib/supabase";
 
-type Tab = "home" | "cinture" | "scarpe" | "profumi" | "contatti";
+type Tab = "home" | "maglie" | "completi" | "pantaloni" | "contatti";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "home", label: "Home" },
-  { id: "cinture", label: "Cinture" },
-  { id: "scarpe", label: "Scarpe" },
-  { id: "profumi", label: "Profumi" },
+  { id: "maglie", label: "Maglie" },
+  { id: "completi", label: "Completi" },
+  { id: "pantaloni", label: "Pantaloni" },
   { id: "contatti", label: "Contatti" },
 ];
 
@@ -251,7 +251,7 @@ function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
       >
         <div className="text-center">
           <h1 className="font-anton text-3xl uppercase tracking-wide text-white">
-            Rg Store
+            Vintage Club Studio
           </h1>
           <p className="mt-1 text-xs uppercase tracking-[0.3em] text-white/40">
             Pannello Admin
@@ -262,7 +262,7 @@ function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
           value={email}
           onChange={setEmail}
           type="email"
-          placeholder="admin@rgstore.it"
+          placeholder="admin@vintageclubstudio.it"
         />
         <Field
           label="Password"
@@ -525,25 +525,16 @@ function ProductsTab({
     onEditingChange(editingId !== null);
   }, [editingId, onEditingChange]);
 
-  const isPerfume = category.id === "profumi";
+  // Taglie dei capi: maglie, completi e pantaloni usano la stessa scala.
   const defaultVariants = (): VariantRow[] =>
-    isPerfume
-      ? [
-          { id: newId("v"), product_id: "", label: "15", multiplier: 1, available: true, sort_order: 1 },
-          { id: newId("v"), product_id: "", label: "30", multiplier: 1.8, available: true, sort_order: 2 },
-          { id: newId("v"), product_id: "", label: "50", multiplier: 2.8, available: true, sort_order: 3 },
-        ]
-      : (category.id === "cinture"
-          ? ["85", "90", "95", "100", "105"]
-          : ["40", "41", "42", "43", "44", "45"]
-        ).map((s, i) => ({
-          id: newId("v"),
-          product_id: "",
-          label: s,
-          multiplier: 1,
-          available: true,
-          sort_order: i + 1,
-        }));
+    ["S", "M", "L", "XL"].map((s, i) => ({
+      id: newId("v"),
+      product_id: "",
+      label: s,
+      multiplier: 1,
+      available: true,
+      sort_order: i + 1,
+    }));
 
   const startNew = () => {
     setDraft({
@@ -746,14 +737,13 @@ function ProductsTab({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] uppercase tracking-widest text-white/50">
-                {isPerfume ? "Formati (ml)" : "Taglie"} — esaurite diventano più
-                chiare sul sito
+                Taglie — esaurite diventano più chiare sul sito
               </h4>
               <button
                 onClick={addVariant}
                 className="clickable rounded-full border border-white/20 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-white/70 hover:bg-white/10 transition-colors"
               >
-                + Aggiungi {isPerfume ? "formato" : "taglia"}
+                + Aggiungi taglia
               </button>
             </div>
             <p className="text-[10px] leading-relaxed text-white/35">
@@ -771,7 +761,7 @@ function ProductsTab({
                   type="text"
                   value={v.label}
                   onChange={(e) => setVariant(i, { label: e.target.value })}
-                  placeholder={isPerfume ? "Es. 30" : "Es. 42"}
+                  placeholder="Es. M"
                   className="w-20 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-center text-sm text-white outline-none focus:border-amber-300/60"
                 />
                 <label className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-white/50">
@@ -852,7 +842,7 @@ function ProductsTab({
                   )}
                 </p>
                 <p className="mt-1 text-[10px] uppercase tracking-widest text-white/35">
-                  {pv.length} {isPerfume ? "formati" : "taglie"} · {pv.filter((v) => v.available).length} disponibili
+                  {pv.length} taglie · {pv.filter((v) => v.available).length} disponibili
                 </p>
               </div>
               <div className="flex gap-2">
@@ -973,7 +963,7 @@ function ContactsTab({
           label="Email"
           value={draft.email}
           onChange={(v) => setDraft({ ...draft, email: v })}
-          placeholder="info@rgstore.it"
+          placeholder="info@vintageclubstudio.it"
         />
         <Field
           label="Numero WhatsApp (solo cifre, con prefisso, senza +)"
@@ -991,7 +981,7 @@ function ContactsTab({
           label="Instagram (con @)"
           value={draft.instagram}
           onChange={(v) => setDraft({ ...draft, instagram: v })}
-          placeholder="@rg.store"
+          placeholder="@vintageclubstudio"
         />
         <Field
           label="Indirizzo / Showroom"
@@ -1092,7 +1082,7 @@ export default function AdminPage() {
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0c] px-6">
         <div className="max-w-md text-center space-y-4">
           <h1 className="font-anton text-3xl uppercase tracking-wide text-white">
-            Rg Store Admin
+            Vintage Club Studio Admin
           </h1>
           <p className="text-sm text-white/60">
             Il pannello admin non è ancora collegato a Supabase.
@@ -1132,7 +1122,8 @@ export default function AdminPage() {
     await supabase.auth.signOut();
   };
 
-  const categoryTab = tab === "cinture" || tab === "scarpe" || tab === "profumi";
+  const categoryTab =
+    tab === "maglie" || tab === "completi" || tab === "pantaloni";
   const currentCategory = categories.find((c) => c.id === tab) ?? null;
 
   // Cambia sezione (bloccato se c'è una modifica non salvata) e torna in cima
@@ -1152,13 +1143,13 @@ export default function AdminPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <a href="/" className="clickable flex items-center gap-3">
             <img
-              src="/store/logo%20rg.jpeg"
-              alt="Rg Store"
+              src="/vintage/logo.jpeg"
+              alt="Vintage Club Studio"
               className="h-9 w-9 rounded-full object-cover"
             />
             <div>
               <p className="font-anton text-lg uppercase leading-none tracking-wide">
-                Rg Store
+                Vintage Club Studio
               </p>
               <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">
                 Admin

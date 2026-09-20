@@ -8,7 +8,15 @@ import {
   useRef,
   useState,
 } from "react";
-import { CONTATTI_BG, HOME_BG, NAV_ITEMS } from "@/lib/catalog";
+import {
+  CATALOGO_INDEX,
+  CONTATTI_BG,
+  CONTATTI_INDEX,
+  HOME_BG,
+  NAV_ITEMS,
+} from "@/lib/catalog";
+import { CATALOGO_BG, EXTRAS } from "@/lib/extras";
+import { CatalogoClassicoView } from "./extras";
 import {
   CONTACT_DEFAULTS,
   buildCatalog,
@@ -52,7 +60,9 @@ interface ProductViewProps {
   activeIndex: number;
   getStyle: (index: number) => React.CSSProperties;
   animScale: number;
-  isMobile: boolean;
+  /** Solo la sezione in vetrina monta il fumo: le altre restano senza,
+   *  così il browser non anima 9 volute sfocate contemporaneamente. */
+  showSmoke: boolean;
   selectedVariant: string;
   current: RuntimeProduct;
   displayPrice: number;
@@ -71,7 +81,7 @@ function ProductView({
   activeIndex,
   getStyle,
   animScale,
-  isMobile,
+  showSmoke,
   selectedVariant,
   current,
   displayPrice,
@@ -83,34 +93,15 @@ function ProductView({
   qty,
   onChangeQty,
   onAdd,
-}: ProductViewProps) {
-  const isMl = cat.id === "profumi";
-  const variantLabel = (v: string) => (isMl ? `${v}ml` : v);
+}: ProductViewProps) {  const variantLabel = (v: string) => v;
 
-  // Su mobile i profumi hanno canvas 669x373 (orizzontale) con la bottiglia
-  // al centro che occupa solo ~20% della larghezza. Per renderli grandi,
-  // ingrandiamo l'immagine fino a riempire l'altezza del box e tagliamo i
-  // lati vuoti (overflow hidden), tenendo la proporzione originale.
-  const zoomBottle = isMl && isMobile;
+  // I capi occupano un canvas quadrato già scontornato: nessun ritaglio,
+  // resta solo la scala legata alla variante selezionata.
   const imgWrapperStyle = (index: number): React.CSSProperties => ({
-    transform:
-      isMl && index === activeIndex ? `scale(${animScale})` : "scale(1)",
+    transform: index === activeIndex ? `scale(${animScale})` : "scale(1)",
     transformOrigin: "center center",
     transition: "transform 250ms cubic-bezier(0.4, 0, 0.2, 1)",
-    ...(zoomBottle ? { overflow: "hidden" } : {}),
   });
-  const imgStyle: React.CSSProperties | undefined = zoomBottle
-    ? {
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        // scale(0.9): leggermente più piccoli rispetto alla versione piena.
-        transform: "translate(-50%, -50%) scale(0.9)",
-        height: "100%",
-        width: "auto",
-        maxWidth: "none",
-      }
-    : undefined;
 
   // Niente swipe su mobile: la selezione può cambiare SOLO con le frecce,
   // così nessun gesto accidentale (dito che scivola, tap storto) può
@@ -119,8 +110,30 @@ function ProductView({
   return (
     <div
       className="w-full relative flex items-center overflow-hidden"
+      data-smoke="vortice"
       style={{ height }}
     >
+      {/* Fumo sotto il capo: nebbia neutra illuminata dalla luce del
+          dettaglio del prodotto (app/extras.css, selettori [data-smoke]).
+          Vive solo nella sezione visibile. */}
+      {showSmoke && (
+        <div
+          className="smoke"
+          style={
+            {
+              "--smoke-c": current.accentHex,
+              "--bg-c": current.bg,
+            } as React.CSSProperties
+          }
+        >
+          <div className="smoke-light" />
+          <div className="smoke-core" />
+          <div className="smoke-puff" />
+          <div className="smoke-puff smoke-puff-2" />
+          <div className="smoke-puff smoke-puff-3" />
+        </div>
+      )}
+
       {/* MOBILE */}
       <div className="md:hidden w-full h-full flex flex-col items-center relative z-40 px-5 pt-20 pb-20">
         {/* Altezza fissa: se il nome va a capo (1 o 2 righe) l'area del
@@ -133,7 +146,7 @@ function ProductView({
         </div>
 
         <div className="relative w-full flex-1 min-h-[170px] flex items-center justify-center">
-          {/* Watermark "Rg Store" dietro gli oggetti anche su mobile */}
+          {/* Watermark del brand dietro gli oggetti anche su mobile */}
           <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none">
             <span className="text-[26vw] font-black uppercase tracking-tighter font-anton text-white opacity-[0.05] leading-none">
               {cat.watermark}
@@ -149,12 +162,11 @@ function ProductView({
                   <img
                     src={item.src}
                     alt={item.name}
-                    className={`${zoomBottle ? "" : "w-full h-full object-contain"} ${
+                    className={`w-full h-full object-contain ${
                       index === activeIndex && current.available === false
                         ? "opacity-35"
                         : ""
                     }`}
-                    style={imgStyle}
                   />
                 </div>
               </div>
@@ -301,12 +313,11 @@ function ProductView({
                 <img
                   src={item.src}
                   alt={item.name}
-                  className={`${zoomBottle ? "" : "w-full h-full object-contain"} ${
+                  className={`w-full h-full object-contain ${
                     index === activeIndex && current.available === false
                       ? "opacity-35"
                       : ""
                   }`}
-                  style={imgStyle}
                 />
               </div>
             </div>
@@ -487,7 +498,7 @@ function ProductView({
 }
 
 /* ------------------------------------------------------------------ */
-/* Home — landing page: logo RG STORE nello sfondo + le 3 categorie    */
+/* Home — landing page: logo del brand nello sfondo + le 3 categorie    */
 /* ------------------------------------------------------------------ */
 function HomeCard({
   cat,
@@ -499,7 +510,6 @@ function HomeCard({
   onSelect: (index: number) => void;
 }) {
   const isCenter = size === "center";
-  const isCinture = cat.id === "cinture";
   return (
     <button
       onClick={() => onSelect(cat.targetIndex)}
@@ -513,9 +523,7 @@ function HomeCard({
         className={`relative flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-1.5 ${
           isCenter
             ? "w-[min(90vw,430px)] h-[clamp(110px,22vh,210px)] md:w-[clamp(330px,38vw,700px)] md:h-[clamp(220px,50vh,540px)]"
-            : isCinture
-              ? "w-[min(82vw,340px)] h-[clamp(80px,14vh,130px)] md:w-[clamp(220px,24vw,460px)] md:h-[clamp(130px,22vh,270px)]"
-              : "w-[min(64vw,300px)] h-[clamp(88px,16vh,150px)] md:w-[clamp(220px,24vw,460px)] md:h-[clamp(220px,44vh,480px)]"
+            : "w-[min(64vw,300px)] h-[clamp(88px,16vh,150px)] md:w-[clamp(220px,24vw,460px)] md:h-[clamp(220px,44vh,480px)]"
         }`}
       >
         {cat.crop ? (
@@ -565,13 +573,16 @@ function HomeView({
       className="w-full relative flex flex-col items-center justify-center overflow-hidden"
       style={{ height }}
     >
-      {/* Logo Rg Store nello sfondo, stesso font della scritta dietro i prodotti */}
+      {/* Logo Vintage Club Studio nello sfondo, stesso font della scritta
+          dietro i prodotti */}
       <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none">
         <span
-          className="font-anton font-black uppercase tracking-tighter text-white leading-none opacity-[0.07]"
-          style={{ fontSize: "clamp(64px, 20vw, 240px)" }}
+          className="font-anton font-black uppercase tracking-tighter text-white leading-none opacity-[0.07] text-center"
+          style={{ fontSize: "clamp(34px, 11vw, 132px)" }}
         >
-          Rg&nbsp;Store
+          Vintage Club
+          <br />
+          Studio
         </span>
       </div>
 
@@ -603,7 +614,7 @@ function HomeView({
 
       {/* Contatti — sotto al centro, con bordo leggero da pulsante */}
       <button
-        onClick={() => onSelect(4)}
+        onClick={() => onSelect(CONTATTI_INDEX)}
         className="clickable group relative z-30 mt-6 md:mt-12 flex items-center gap-3 rounded-full border border-white/25 bg-white/5 px-6 py-2.5 md:px-8 md:py-3 text-white/70 hover:text-white hover:border-white/60 hover:bg-white/10 transition-all duration-300 active:scale-95"
       >
         <span className="text-[11px] sm:text-xs md:text-sm uppercase font-semibold tracking-[0.3em]">
@@ -630,14 +641,14 @@ function HomeView({
 export default function Page() {
   const [viewIndex, setViewIndex] = useState(0); // home all'avvio
   const [activeByCat, setActiveByCat] = useState<Record<string, number>>({
-    cinture: 0,
-    scarpe: 0,
-    profumi: 0,
+    maglie: 0,
+    completi: 0,
+    pantaloni: 0,
   });
   const [settledByCat, setSettledByCat] = useState<Record<string, number>>({
-    cinture: 0,
-    scarpe: 0,
-    profumi: 0,
+    maglie: 0,
+    completi: 0,
+    pantaloni: 0,
   });
   const [isAnimating, setIsAnimating] = useState(false);
   // Blocco sincrono: impedisce che due navigazioni consecutive partano nello
@@ -651,15 +662,38 @@ export default function Page() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartBump, setCartBump] = useState(false);
-  const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 });
-  const [isCursorHovering, setIsCursorHovering] = useState(false);
   const [flyState, setFlyState] = useState<FlyState | null>(null);
   const [checkoutHover, setCheckoutHover] = useState(false);
   const [selectedVar, setSelectedVar] = useState<Record<string, string>>({});
   const [qty, setQty] = useState(1);
-  const [animScale, setAnimScale] = useState(1.08); // default 30ml
+  const [animScale, setAnimScale] = useState(1);
   const animTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cartIconRef = useRef<HTMLButtonElement>(null);
+  // Cursore personalizzato: spostato scrivendo direttamente nel DOM, così
+  // il movimento del mouse non ridisegna più tutta la pagina.
+  const cursorRef = useRef<HTMLDivElement | null>(null);
+  // Quantità e taglia correnti lette da addToCart tramite ref: la funzione
+  // resta stabile e il catalogo non si ridisegna ad ogni clic.
+  const qtyRef = useRef(qty);
+  const selectedVarRef = useRef(selectedVar);
+  // Barra di navigazione mobile: con la voce in più del Catalogo le voci
+  // non ci stanno tutte, quindi porto in vista quella attiva.
+  const mobileNavRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = mobileNavRef.current?.querySelector(
+      '[data-nav-active="true"]'
+    ) as HTMLElement | null;
+    el?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [viewIndex]);
+
+  useEffect(() => {
+    qtyRef.current = qty;
+  }, [qty]);
+
+  useEffect(() => {
+    selectedVarRef.current = selectedVar;
+  }, [selectedVar]);
 
   // Catalogo: dal database se configurato, altrimenti statico
   const [catalogData, setCatalogData] = useState<CatalogData | null>(null);
@@ -695,13 +729,20 @@ export default function Page() {
     window.addEventListener("resize", handleResize);
     window.addEventListener("orientationchange", handleResize);
 
-    const moveCursor = (e: MouseEvent) =>
-      setCursorPos({ x: e.clientX, y: e.clientY });
+    // Nessuno stato React qui dentro: spostare il cursore costava un
+    // re-render completo della pagina ad ogni pixel di movimento.
+    const moveCursor = (e: MouseEvent) => {
+      const el = cursorRef.current;
+      if (!el) return;
+      el.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
+    };
     const handleHover = (e: MouseEvent) => {
+      const el = cursorRef.current;
+      if (!el) return;
       const target = (e.target as Element).closest(
         'button, a, input, [role="button"], .clickable'
       );
-      setIsCursorHovering(!!target);
+      el.classList.toggle("hovering", !!target);
     };
 
     window.addEventListener("mousemove", moveCursor);
@@ -784,12 +825,23 @@ export default function Page() {
   const changeQty = (delta: number) =>
     setQty((prev) => Math.max(1, prev + delta));
 
-  const addToCart = (cat: RuntimeCategory, product: RuntimeProduct) => {
-    if (!cartIconRef.current) return;
-    const cartRect = cartIconRef.current.getBoundingClientRect();
-    const variant = resolveVariant(product);
+  // Identità stabile (deps vuote): il catalogo memoizzato non si ridisegna
+  // quando cambiano quantità, taglia o carrello.
+  const addToCart = useCallback((_cat: RuntimeCategory, product: RuntimeProduct) => {
+    const cartIcon = cartIconRef.current;
+    if (!cartIcon) return;
+    const cartRect = cartIcon.getBoundingClientRect();
+    const selected = selectedVarRef.current[product.id];
+    const match = product.variants.find((v) => v.value === selected);
+    const variant =
+      match && match.available !== false
+        ? match.value
+        : product.variants.find((v) => v.available !== false)?.value ??
+          product.variants[0]?.value ??
+          "";
     const unitPrice = getUnitPrice(product, variant);
     const itemId = `${product.id}-${variant}`;
+    const count = qtyRef.current;
 
     setFlyState({
       src: product.src,
@@ -810,7 +862,7 @@ export default function Page() {
         const existing = prev.find((item) => item.id === itemId);
         if (existing) {
           return prev.map((item) =>
-            item.id === itemId ? { ...item, qty: item.qty + qty } : item
+            item.id === itemId ? { ...item, qty: item.qty + count } : item
           );
         }
         return [
@@ -822,7 +874,7 @@ export default function Page() {
             src: product.src,
             variant,
             price: unitPrice,
-            qty,
+            qty: count,
           },
         ];
       });
@@ -830,7 +882,7 @@ export default function Page() {
       setCartBump(true);
       setTimeout(() => setCartBump(false), 350);
     }, 650);
-  };
+  }, []);
 
   const updateQuantity = (id: string, delta: number) => {
     setCart((prev) =>
@@ -934,30 +986,47 @@ export default function Page() {
     };
   };
 
+  const currentProduct =
+    viewIndex >= 1 && viewIndex <= categories.length
+      ? categories[viewIndex - 1].products[
+          activeByCat[categories[viewIndex - 1].id] ?? 0
+        ]
+      : undefined;
+
   const currentBg =
-    viewIndex === 4
+    viewIndex === CONTATTI_INDEX
       ? CONTATTI_BG
       : viewIndex === 0
         ? HOME_BG
-        : categories[viewIndex - 1].products[
-            activeByCat[categories[viewIndex - 1].id] ?? 0
-          ].bg;
+        : viewIndex === CATALOGO_INDEX
+          ? CATALOGO_BG
+          : currentProduct?.bg ?? HOME_BG;
 
   return (
     <div
       className="w-full overflow-hidden relative site-enter"
-      style={{
-        backgroundColor: currentBg,
-        transition: "background-color 0.8s ease",
-        height: viewportH,
-      }}
+      style={
+        {
+          backgroundColor: currentBg,
+          transition: "background-color 0.8s ease",
+          height: viewportH,
+        } as React.CSSProperties
+      }
     >
-      {!isMobile && (
-        <div
-          className={`custom-cursor ${isCursorHovering ? "hovering" : ""}`}
-          style={{ left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }}
-        />
-      )}
+      {/* Sfondo del capo: lastra centrale più chiara, venature di marmo e
+          velo ai bordi (il fondo cambia con il prodotto e non è mai piatto) */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none bg-depth"
+        style={{ "--bg-c": currentBg } as React.CSSProperties}
+      />
+      <div className="bg-marble z-0">
+        <span className="bg-vein bg-vein-a" />
+        <span className="bg-vein bg-vein-b" />
+        <span className="bg-vein bg-vein-c" />
+      </div>
+      <div className="absolute inset-0 z-0 pointer-events-none bg-scrim" />
+
+      {!isMobile && <div ref={cursorRef} className="custom-cursor" />}
 
       {flyState && (
         <div
@@ -991,20 +1060,22 @@ export default function Page() {
           className="clickable text-white tracking-tight flex items-center gap-3"
         >
           <img
-            src="/store/logo%20rg.jpeg"
-            alt="Rg Store"
+            src="/vintage/logo.jpeg"
+            alt="Vintage Club Studio"
             className="h-8 w-8 sm:h-11 sm:w-11 rounded-full object-cover"
           />
           <span
-            className="text-lg sm:text-3xl font-normal font-playfair"
+            className="text-base sm:text-2xl font-normal font-playfair"
             style={{ letterSpacing: "-0.02em" }}
           >
-            Rg Store
+            Vintage Club Studio
           </span>
         </div>
 
         <nav className="flex items-center gap-1.5 sm:gap-6">
-          <div className="hidden sm:flex items-center bg-black/20 backdrop-blur-md border border-white/10 rounded-full p-1 sm:p-1.5">
+          {/* Con la voce extra "Catalogo Classico" il menu può diventare
+              lungo: su schermi stretti scorre invece di rompere l'header */}
+          <div className="hidden sm:flex items-center max-w-[60vw] overflow-x-auto no-scrollbar bg-black/20 backdrop-blur-md border border-white/10 rounded-full p-1 sm:p-1.5">
             {NAV_ITEMS.map((n) => (
               <button
                 key={n.id}
@@ -1053,15 +1124,19 @@ export default function Page() {
         </nav>
       </header>
 
-      {/* Navigazione mobile — barra in basso (Home + 3 categorie + Contatti),
+      {/* Navigazione mobile — barra in basso (Home + categorie + Contatti),
           scrollabile se lo schermo è stretto */}
       <div className="sm:hidden fixed bottom-3 left-1/2 z-[60] w-[96vw] max-w-[420px] -translate-x-1/2">
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar rounded-full border border-white/15 bg-black/50 p-1.5 backdrop-blur-md">
+        <div
+          ref={mobileNavRef}
+          className="flex items-center gap-1 overflow-x-auto no-scrollbar rounded-full border border-white/15 bg-black/50 p-1.5 backdrop-blur-md"
+        >
           {NAV_ITEMS.map((n) => (
             <button
               key={n.id}
               onClick={() => setViewIndex(n.index)}
-              className={`clickable whitespace-nowrap px-3 py-2 rounded-full text-[9px] font-semibold uppercase tracking-wide transition-all duration-300 ${
+              data-nav-active={viewIndex === n.index}
+              className={`clickable whitespace-nowrap px-2.5 py-2 rounded-full text-[9px] font-semibold uppercase tracking-wide transition-all duration-300 ${
                 viewIndex === n.index
                   ? "bg-white text-black"
                   : "text-white/70 hover:text-white"
@@ -1073,17 +1148,17 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Contenitore verticale: Home → Cinture → Scarpe → Profumi → Contatti */}
+      {/* Contenitore verticale: Home → categorie → (Catalogo Classico) → Contatti */}
       <div
         className="w-full absolute top-0 left-0 flex flex-col z-20"
         style={{
-          height: viewportH * 5,
+          height: viewportH * NAV_ITEMS.length,
           transform: `translateY(-${viewIndex * viewportH}px)`,
           transition: "transform 0.9s cubic-bezier(0.65, 0, 0.35, 1)",
         }}
       >
         <HomeView height={viewportH} cards={homeCards} onSelect={setViewIndex} />
-        {categories.map((cat) => {
+        {categories.map((cat, catIndex) => {
           const activeIndex = activeByCat[cat.id] ?? 0;
           const current = cat.products[activeIndex];
           if (!current) return null;
@@ -1101,7 +1176,7 @@ export default function Page() {
               height={viewportH}
               getStyle={(i) => getCarouselStyle(cat, i)}
               animScale={animScale}
-              isMobile={isMobile}
+              showSmoke={viewIndex === catIndex + 1}
               selectedVariant={variant}
               current={current}
               displayPrice={getUnitPrice(current, variant)}
@@ -1117,6 +1192,15 @@ export default function Page() {
             />
           );
         })}
+
+        {/* CATALOGO CLASSICO — sezione temporanea (app/extras.tsx) */}
+        {EXTRAS.catalogoClassico && (
+          <CatalogoClassicoView
+            categories={categories}
+            height={viewportH}
+            onAdd={addToCart}
+          />
+        )}
 
         {/* SEZIONE CONTATTI */}
         <div
@@ -1190,7 +1274,7 @@ export default function Page() {
                   className="w-full h-full border-0 filter saturate-[0.8] opacity-80 hover:opacity-100 transition-opacity"
                   loading="lazy"
                   allowFullScreen
-                  title="Rg Store Mappa"
+                  title="Vintage Club Studio Mappa"
                 />
               </div>
             </div>
@@ -1200,9 +1284,13 @@ export default function Page() {
 
       {/* DRAWER CARRELLO */}
       <div className="fixed inset-0 z-[100] pointer-events-none">
+        {/* Il velo prende il blur solo quando è aperto: da chiuso resta
+            invisibile senza costare un backdrop-filter a tutto schermo. */}
         <div
-          className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-500 pointer-events-auto ${
-            isCartOpen ? "opacity-100" : "opacity-0 !pointer-events-none"
+          className={`absolute inset-0 bg-black/60 transition-opacity duration-500 pointer-events-auto ${
+            isCartOpen
+              ? "opacity-100 backdrop-blur-sm"
+              : "opacity-0 !pointer-events-none"
           }`}
           onClick={() => setIsCartOpen(false)}
         />

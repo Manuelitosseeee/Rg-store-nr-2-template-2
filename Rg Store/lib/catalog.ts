@@ -1,3 +1,5 @@
+import { EXTRAS } from "@/lib/extras";
+
 export interface Product {
   id: string;
   name: string;
@@ -5,7 +7,16 @@ export interface Product {
   description: string;
   price: number;
   src: string;
+  /**
+   * Colore di fondo della sezione quando questo capo è in vetrina.
+   * È "prevalentemente" il colore del capo: le bande e la lastra centrale
+   * vengono ricavate da questo tono in CSS (senza sfondi piatti).
+   */
   bg: string;
+  /**
+   * Colore del dettaglio principale del capo: è la luce del "faretto"
+   * che illumina il fumo sotto il prodotto.
+   */
   accentHex: string;
 }
 
@@ -30,238 +41,216 @@ export interface CategoryConfig {
   products: Product[];
 }
 
-const img = (file: string) => `/store/${file}.png`;
+const img = (file: string) => `/vintage/${file}.png`;
 
-const scarpe: Product[] = [
+const maglie: Product[] = [
   {
-    id: "aj4-black-cat",
-    name: "Air Jordan 4 «Black Cat»",
-    subtitle: "Stealth Leather",
+    id: "maglia-1",
+    name: "Maglia 1",
+    subtitle: "Rosso",
     description:
-      "Total black in pelle. Il look stealth, al massimo della pulizia.",
-    price: 130,
-    src: img("Air_Jordan_4_Black_Cat-removebg-preview"),
-    bg: "#17171a",
-    accentHex: "#8a8f98",
+      "Maglia rossa dal taglio vintage: colore pieno e finiture a contrasto.",
+    price: 39.9,
+    src: img("maglia-1"),
+    bg: "#5e1622",
+    accentHex: "#d9414f",
   },
   {
-    id: "aj4-bred",
-    name: "Air Jordan 4 «Bred»",
-    subtitle: "Classic Black & Red",
+    id: "maglia-2",
+    name: "Maglia 2",
+    subtitle: "Nero",
     description:
-      "Il classico black & red che ha scritto la storia delle Jordan.",
-    price: 120,
-    src: img("Air_Jordan_4_Bred-removebg-preview"),
-    bg: "#3a1016",
-    accentHex: "#e63946",
+      "Maglia scura essenziale: base nera, taglio pulito, stile da club.",
+    price: 39.9,
+    src: img("maglia-2"),
+    bg: "#33333c",
+    accentHex: "#a8b0c0",
   },
   {
-    id: "aj4-military-blue",
-    name: "Air Jordan 4 «Military Blue»",
-    subtitle: "Heritage Retro",
-    description:
-      "Blu militare su tomaia bianca: il ritorno di una leggenda del 1989.",
-    price: 125,
-    src: img("Air_Jordan_4_Military_Blue-removebg-preview"),
-    bg: "#14263d",
-    accentHex: "#457b9d",
+    id: "maglia-3",
+    name: "Maglia 3",
+    subtitle: "Blu",
+    description: "Maglia blu profondo, ispirata alle casacche vintage.",
+    price: 39.9,
+    src: img("maglia-3"),
+    bg: "#0f3f8c",
+    accentHex: "#3878e0",
   },
   {
-    id: "aj4-lightning",
-    name: "Air Jordan 4 «Retro Lightning»",
-    subtitle: "Electric Yellow",
+    id: "maglia-4",
+    name: "Maglia 4",
+    subtitle: "Verde petrolio",
     description:
-      "Giallo elettrico e dettagli neri: energia pura, da collezione.",
-    price: 135,
-    src: img("Air_Jordan_4_Retro_Lightning-removebg-preview"),
-    bg: "#3d310f",
-    accentHex: "#f4d03f",
-  },
-  {
-    id: "aj4-white-cement",
-    name: "Air Jordan 4 «White Cement»",
-    subtitle: "OG 1989",
-    description:
-      "L'originale del 1989. Bianco, cemento e dettagli senza tempo.",
-    price: 140,
-    src: img("Air_Jordan_4_White_Cement-removebg-preview"),
-    bg: "#23252b",
-    accentHex: "#e8e6e1",
+      "Maglia verde petrolio, tinta piena e dettagli ridotti all'essenziale.",
+    price: 39.9,
+    src: img("maglia-4"),
+    bg: "#0f564f",
+    accentHex: "#1fae97",
   },
 ];
 
-const profumi: Product[] = [
+const completi: Product[] = [
   {
-    id: "creed-aventus",
-    name: "Creed Aventus",
-    subtitle: "Eau de Parfum",
+    id: "completo-1",
+    name: "Completo 1",
+    subtitle: "Chiaro",
     description:
-      "Ambra, muschio e bergamotto. Il profumo del successo.",
-    price: 60,
-    src: img("Creed_Aventus-removebg-preview"),
-    bg: "#142b22",
-    accentHex: "#2a9d8f",
+      "Completo chiaro con dettagli rossi: maglia e pantalone abbinati.",
+    price: 89.9,
+    src: img("completo-1"),
+    bg: "#b9b1bf",
+    accentHex: "#cf4759",
   },
   {
-    id: "gucci-guilty",
-    name: "Gucci Guilty",
-    subtitle: "Eau de Parfum",
-    description: "Rosa, lavanda e cedro: audace e sensuale.",
-    price: 65,
-    src: img("Gucci_Guilty-removebg-preview"),
-    bg: "#2b1526",
-    accentHex: "#e76f51",
+    id: "completo-2",
+    name: "Completo 2",
+    subtitle: "Blu & Giallo",
+    description:
+      "Completo blu con dettagli gialli, il classico da trasferta.",
+    price: 89.9,
+    src: img("completo-2"),
+    bg: "#1c3e68",
+    accentHex: "#d8c24f",
   },
   {
-    id: "jpg-le-male-elixir",
-    name: "Jean Paul Gaultier Le Male Elixir",
-    subtitle: "Elixir Intense",
-    description: "Vaniglia, miele e lavanda: magnetico e intenso.",
-    price: 70,
-    src: img("Jean_Paul_Gaultier_le_male_elixir-removebg-preview"),
-    bg: "#1b2740",
-    accentHex: "#6ba8d6",
+    id: "completo-3",
+    name: "Completo 3",
+    subtitle: "Viola",
+    description: "Completo viola intenso, maglia e pantalone coordinati.",
+    price: 89.9,
+    src: img("completo-3"),
+    bg: "#463065",
+    accentHex: "#9061d6",
   },
   {
-    id: "tom-ford",
-    name: "Tom Ford",
-    subtitle: "Eau de Parfum",
-    description: "Legni pregiati e note orientali: pura eleganza.",
-    price: 75,
-    src: img("Tom_Ford-removebg-preview"),
-    bg: "#20160c",
-    accentHex: "#c9a25e",
-  },
-  {
-    id: "one-million",
-    name: "One Million",
-    subtitle: "Eau de Toilette",
-    description: "Cuoio, cannella e ambra: ricco e inconfondibile.",
-    price: 80,
-    src: img("One_Million-removebg-preview"),
-    bg: "#2e1d12",
-    accentHex: "#d4af37",
+    id: "completo-4",
+    name: "Completo 4",
+    subtitle: "Nero",
+    description: "Completo nero con dettagli rosa antico.",
+    price: 89.9,
+    src: img("completo-4"),
+    bg: "#26212a",
+    accentHex: "#bb7d95",
   },
 ];
 
-const cinture: Product[] = [
+const pantaloni: Product[] = [
   {
-    id: "lv-monogram",
-    name: "Louis Vuitton Monogram",
-    subtitle: "Monogram Canvas",
-    description:
-      "Tela monogram iconica e fibbia in metallo dorato.",
-    price: 70,
-    src: img("Louis_Vuitton_Monogram-removebg-preview"),
-    bg: "#2b2413",
-    accentHex: "#d4af37",
+    id: "pantalone-1",
+    name: "Pantalone 1",
+    subtitle: "Rosso",
+    description: "Pantalone rosso dal taglio vintage.",
+    price: 44.9,
+    src: img("pantalone-1"),
+    bg: "#5a1019",
+    accentHex: "#d9414f",
   },
   {
-    id: "ferragamo-gancini",
-    name: "Ferragamo Gancini",
-    subtitle: "Gancini Leather",
-    description:
-      "Pelle pregiata e fibbia Gancini, il simbolo della maison.",
-    price: 75,
-    src: img("Ferragamo_Gancini-removebg-preview"),
-    bg: "#261c12",
-    accentHex: "#b08d57",
+    id: "pantalone-2",
+    name: "Pantalone 2",
+    subtitle: "Antracite",
+    description: "Pantalone antracite, essenziale e senza tempo.",
+    price: 44.9,
+    src: img("pantalone-2"),
+    bg: "#2b2530",
+    accentHex: "#a4596a",
   },
   {
-    id: "hermes-h",
-    name: "Hermès H",
-    subtitle: "H Buckle",
-    description:
-      "La fibbia «H» in metallo: sobria, elegante, eterna.",
-    price: 80,
-    src: img("Hermes_H-removebg-preview"),
-    bg: "#1d2b21",
-    accentHex: "#e07a5f",
+    id: "pantalone-3",
+    name: "Pantalone 3",
+    subtitle: "Blu navy",
+    description: "Pantalone blu navy con dettagli rossi.",
+    price: 44.9,
+    src: img("pantalone-3"),
+    bg: "#1f2644",
+    accentHex: "#bc4150",
   },
   {
-    id: "versace-medusa",
-    name: "Versace Medusa",
-    subtitle: "Medusa Metal",
-    description: "Medusa in rilievo: audacia e carattere.",
-    price: 85,
-    src: img("Versace_Medusa-removebg-preview"),
-    bg: "#1f1424",
-    accentHex: "#c0b283",
+    id: "pantalone-4",
+    name: "Pantalone 4",
+    subtitle: "Chiaro",
+    description: "Pantalone chiaro, da abbinare alla maglia.",
+    price: 44.9,
+    src: img("pantalone-4"),
+    bg: "#b4acb8",
+    accentHex: "#c84a5c",
   },
-  {
-    id: "dior-oblique",
-    name: "Dior Oblique",
-    subtitle: "Oblique Jacquard",
-    description:
-      "Motivo Oblique ricamato: lusso discreto, stile puro.",
-    price: 90,
-    src: img("Dior_Oblique-removebg-preview"),
-    bg: "#101926",
-    accentHex: "#7f8ea3",
-  },
-];
-
-const ML_VARIANTS: VariantOption[] = [
-  { value: "15", multiplier: 1, scale: 1 },
-  { value: "30", multiplier: 1.8, scale: 1.08 },
-  { value: "50", multiplier: 2.8, scale: 1.18 },
 ];
 
 const sizeVariants = (values: string[]): VariantOption[] =>
   values.map((v) => ({ value: v, multiplier: 1, scale: 1 }));
 
+const TAGLIE = ["S", "M", "L", "XL"];
+
 export const CATALOG: CategoryConfig[] = [
   {
-    id: "cinture",
-    label: "Cinture",
-    watermark: "RG STORE",
-    centerScale: 1.75,
-    boxW: 340,
-    boxH: 260,
-    mobileBoxW: 230,
-    mobileBoxH: 200,
-    variantLabel: "Taglia (cm)",
-    variants: sizeVariants(["85", "90", "95", "100", "105"]),
-    priceLabel: (v) => `Taglia ${v} cm`,
-    products: cinture,
-  },
-  {
-    id: "scarpe",
-    label: "Scarpe",
-    watermark: "RG STORE",
-    centerScale: 1.9,
+    id: "maglie",
+    label: "Maglie",
+    watermark: "VINTAGE",
+    centerScale: 1.6,
     boxW: 320,
-    boxH: 360,
+    boxH: 380,
     mobileBoxW: 250,
-    mobileBoxH: 280,
+    mobileBoxH: 300,
     variantLabel: "Taglia",
-    variants: sizeVariants(["40", "41", "42", "43", "44", "45"]),
+    variants: sizeVariants(TAGLIE),
     priceLabel: (v) => `Taglia ${v}`,
-    products: scarpe,
+    products: maglie,
   },
   {
-    id: "profumi",
-    label: "Profumi",
-    watermark: "RG STORE",
-    centerScale: 2.8,
-    boxW: 280,
-    boxH: 460,
-    mobileBoxW: 230,
+    id: "completi",
+    label: "Completi",
+    watermark: "VINTAGE",
+    centerScale: 1.5,
+    boxW: 340,
+    boxH: 420,
+    mobileBoxW: 260,
     mobileBoxH: 330,
-    variantLabel: "Formato",
-    variants: ML_VARIANTS,
-    priceLabel: (v) => `Flacone ${v}ml`,
-    products: profumi,
+    variantLabel: "Taglia",
+    variants: sizeVariants(TAGLIE),
+    priceLabel: (v) => `Taglia ${v}`,
+    products: completi,
+  },
+  {
+    id: "pantaloni",
+    label: "Pantaloni",
+    watermark: "VINTAGE",
+    centerScale: 1.6,
+    boxW: 300,
+    boxH: 420,
+    mobileBoxW: 240,
+    mobileBoxH: 330,
+    variantLabel: "Taglia",
+    variants: sizeVariants(TAGLIE),
+    priceLabel: (v) => `Taglia ${v}`,
+    products: pantaloni,
   },
 ];
 
-export const NAV_ITEMS: { id: string; label: string; index: number }[] = [
-  { id: "home", label: "Home", index: 0 },
-  { id: "cinture", label: "Cinture", index: 1 },
-  { id: "scarpe", label: "Scarpe", index: 2 },
-  { id: "profumi", label: "Profumi", index: 3 },
-  { id: "contatti", label: "Contatti", index: 4 },
+// Voci di navigazione nell'ordine delle sezioni della pagina.
+// "Catalogo Classico" è una sezione TEMPORANEA: compare solo quando
+// EXTRAS.catalogoClassico è attivo (lib/extras.ts). Gli indici sono
+// calcolati dall'ordine, così aggiungere/togliere la voce non richiede
+// altri ritocchi.
+const NAV_ENTRIES: { id: string; label: string }[] = [
+  { id: "home", label: "Home" },
+  { id: "maglie", label: "Maglie" },
+  { id: "completi", label: "Completi" },
+  { id: "pantaloni", label: "Pantaloni" },
+  ...(EXTRAS.catalogoClassico
+    ? [{ id: "catalogo", label: "Catalogo Classico" }]
+    : []),
+  { id: "contatti", label: "Contatti" },
 ];
+
+export const NAV_ITEMS: { id: string; label: string; index: number }[] =
+  NAV_ENTRIES.map((entry, index) => ({ ...entry, index }));
+
+/** Indice della sezione Contatti (sempre l'ultima voce). */
+export const CONTATTI_INDEX = NAV_ITEMS.length - 1;
+
+/** Indice della sezione Catalogo Classico, oppure -1 se disattivata. */
+export const CATALOGO_INDEX = NAV_ITEMS.findIndex((n) => n.id === "catalogo");
 
 export const CONTATTI_BG = "#101216";
 export const HOME_BG = "#0d0f12";
@@ -271,34 +260,33 @@ export interface HomeCategory {
   label: string;
   src: string;
   targetIndex: number;
-  // true = ritaglia i lati vuoti del canvas (profumi: bottiglia al centro
-  // su canvas orizzontale molto largo), così l'oggetto si vede grande.
+  // true = ritaglia i lati vuoti del canvas, così l'oggetto si vede grande.
   crop: boolean;
 }
 
 // Le tre categorie mostrate nella sezione Home:
-// centrale (SCARPE) più grande, laterali (CINTURE / PROFUMI) più piccole.
+// centrale (COMPLETI) più grande, laterali (MAGLIE / PANTALONI) più piccole.
 export const HOME_CATEGORIES: HomeCategory[] = [
   {
-    id: "cinture",
-    label: "CINTURE",
-    src: img("Louis_Vuitton_Monogram-removebg-preview"),
+    id: "maglie",
+    label: "MAGLIE",
+    src: img("maglia-1"),
     targetIndex: 1,
     crop: false,
   },
   {
-    id: "scarpe",
-    label: "SCARPE",
-    src: img("Air_Jordan_4_White_Cement-removebg-preview"),
+    id: "completi",
+    label: "COMPLETI",
+    src: img("completo-2"),
     targetIndex: 2,
     crop: false,
   },
   {
-    id: "profumi",
-    label: "PROFUMI",
-    src: img("Creed_Aventus-removebg-preview"),
+    id: "pantaloni",
+    label: "PANTALONI",
+    src: img("pantalone-4"),
     targetIndex: 3,
-    crop: true,
+    crop: false,
   },
 ];
 
