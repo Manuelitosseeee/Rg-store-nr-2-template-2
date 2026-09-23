@@ -30,6 +30,7 @@ create table if not exists public.products (
   image_url text not null default '',
   bg_color text not null default '#141414',
   accent_color text not null default '#ffffff',
+  discount_percent numeric not null default 0,
   available boolean not null default true,
   sort_order int not null default 0,
   created_at timestamptz not null default now()
@@ -58,6 +59,11 @@ create table if not exists public.contacts (
   maps_embed_url text not null default '',
   cta_label text not null default ''
 );
+
+-- ============================================================
+-- AGGIORNAMENTO: colonna sconto per prodotto (0 = nessuno)
+-- ============================================================
+alter table public.products add column if not exists discount_percent numeric not null default 0;
 
 -- ============================================================
 -- SICUREZZA: tutti possono LEGGERE, solo l'admin (loggato) scrive
@@ -124,21 +130,21 @@ insert into public.home_cards (id, title, image_url, target_category, sort_order
   ('home-pantaloni', 'PANTALONI', '/vintage/pantalone-4.png', 'pantaloni', 3)
 on conflict (id) do nothing;
 
-insert into public.products (id, category, name, subtitle, description, price, image_url, bg_color, accent_color, sort_order) values
-  ('maglia-1',      'maglie',    'Maglia 1',      'Rosso',           'Maglia rossa dal taglio vintage: colore pieno e finiture a contrasto.',        39.9, '/vintage/maglia-1.png',     '#5e1622', '#d9414f', 1),
-  ('maglia-2',      'maglie',    'Maglia 2',      'Nero',            'Maglia scura essenziale: base nera, taglio pulito, stile da club.',            39.9, '/vintage/maglia-2.png',     '#33333c', '#a8b0c0', 2),
-  ('maglia-3',      'maglie',    'Maglia 3',      'Blu',             'Maglia blu profondo, ispirata alle casacche vintage.',                         39.9, '/vintage/maglia-3.png',     '#0f3f8c', '#3878e0', 3),
-  ('maglia-4',      'maglie',    'Maglia 4',      'Verde petrolio',  'Maglia verde petrolio, tinta piena e dettagli ridotti all''essenziale.',        39.9, '/vintage/maglia-4.png',     '#0f564f', '#1fae97', 4),
+insert into public.products (id, category, name, subtitle, description, price, image_url, bg_color, accent_color, discount_percent, sort_order) values
+  ('maglia-1',      'maglie',    'Maglia 1',      'Rosso',           'Maglia rossa dal taglio vintage: colore pieno e finiture a contrasto.',        39.9, '/vintage/maglia-1.png',     '#5e1622', '#d9414f', 0, 1),
+  ('maglia-2',      'maglie',    'Maglia 2',      'Nero',            'Maglia scura essenziale: base nera, taglio pulito, stile da club.',            39.9, '/vintage/maglia-2.png',     '#33333c', '#a8b0c0', 0, 2),
+  ('maglia-3',      'maglie',    'Maglia 3',      'Blu',             'Maglia blu profondo, ispirata alle casacche vintage.',                         39.9, '/vintage/maglia-3.png',     '#0f3f8c', '#3878e0', 0, 3),
+  ('maglia-4',      'maglie',    'Maglia 4',      'Verde petrolio',  'Maglia verde petrolio, tinta piena e dettagli ridotti all''essenziale.',        39.9, '/vintage/maglia-4.png',     '#0f564f', '#1fae97', 0, 4),
 
-  ('completo-1',    'completi',  'Completo 1',    'Chiaro',          'Completo chiaro con dettagli rossi: maglia e pantalone abbinati.',             89.9, '/vintage/completo-1.png',   '#ddd6df', '#cf4759', 1),
-  ('completo-2',    'completi',  'Completo 2',    'Blu & Giallo',    'Completo blu con dettagli gialli, il classico da trasferta.',                  89.9, '/vintage/completo-2.png',   '#1c3e68', '#d8c24f', 2),
-  ('completo-3',    'completi',  'Completo 3',    'Viola',           'Completo viola intenso, maglia e pantalone coordinati.',                       89.9, '/vintage/completo-3.png',   '#463065', '#9061d6', 3),
-  ('completo-4',    'completi',  'Completo 4',    'Nero',            'Completo nero con dettagli rosa antico.',                                      89.9, '/vintage/completo-4.png',   '#26212a', '#bb7d95', 4),
+  ('completo-1',    'completi',  'Completo 1',    'Chiaro',          'Completo chiaro con dettagli rossi: maglia e pantalone abbinati.',             89.9, '/vintage/completo-1.png',   '#ddd6df', '#cf4759', 0, 1),
+  ('completo-2',    'completi',  'Completo 2',    'Blu & Giallo',    'Completo blu con dettagli gialli, il classico da trasferta.',                  89.9, '/vintage/completo-2.png',   '#1c3e68', '#d8c24f', 0, 2),
+  ('completo-3',    'completi',  'Completo 3',    'Viola',           'Completo viola intenso, maglia e pantalone coordinati.',                       89.9, '/vintage/completo-3.png',   '#463065', '#9061d6', 0, 3),
+  ('completo-4',    'completi',  'Completo 4',    'Nero',            'Completo nero con dettagli rosa antico.',                                      89.9, '/vintage/completo-4.png',   '#26212a', '#bb7d95', 0, 4),
 
-  ('pantalone-1',   'pantaloni', 'Pantalone 1',   'Rosso',           'Pantalone rosso dal taglio vintage.',                                          44.9, '/vintage/pantalone-1.png',  '#5a1019', '#d9414f', 1),
-  ('pantalone-2',   'pantaloni', 'Pantalone 2',   'Antracite',       'Pantalone antracite, essenziale e senza tempo.',                               44.9, '/vintage/pantalone-2.png',  '#2b2530', '#a4596a', 2),
-  ('pantalone-3',   'pantaloni', 'Pantalone 3',   'Blu navy',        'Pantalone blu navy con dettagli rossi.',                                       44.9, '/vintage/pantalone-3.png',  '#1f2644', '#bc4150', 3),
-  ('pantalone-4',   'pantaloni', 'Pantalone 4',   'Chiaro',          'Pantalone chiaro, da abbinare alla maglia.',                                   44.9, '/vintage/pantalone-4.png',  '#d9d2dd', '#c84a5c', 4)
+  ('pantalone-1',   'pantaloni', 'Pantalone 1',   'Rosso',           'Pantalone rosso dal taglio vintage.',                                          44.9, '/vintage/pantalone-1.png',  '#5a1019', '#d9414f', 0, 1),
+  ('pantalone-2',   'pantaloni', 'Pantalone 2',   'Antracite',       'Pantalone antracite, essenziale e senza tempo.',                               44.9, '/vintage/pantalone-2.png',  '#2b2530', '#a4596a', 0, 2),
+  ('pantalone-3',   'pantaloni', 'Pantalone 3',   'Blu navy',        'Pantalone blu navy con dettagli rossi.',                                       44.9, '/vintage/pantalone-3.png',  '#1f2644', '#bc4150', 0, 3),
+  ('pantalone-4',   'pantaloni', 'Pantalone 4',   'Chiaro',          'Pantalone chiaro, da abbinare alla maglia.',                                   44.9, '/vintage/pantalone-4.png',  '#d9d2dd', '#c84a5c', 0, 4)
 on conflict (id) do nothing;
 
 -- Taglie S / M / L / XL generate per ogni capo del catalogo

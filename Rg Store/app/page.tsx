@@ -9,11 +9,9 @@ import {
   useState,
 } from "react";
 import {
-  CATALOGO_INDEX,
+  buildNavItems,
   CONTATTI_BG,
-  CONTATTI_INDEX,
   HOME_BG,
-  NAV_ITEMS,
 } from "@/lib/catalog";
 import { CATALOGO_BG, EXTRAS } from "@/lib/extras";
 import { CatalogoClassicoView } from "./extras";
@@ -22,6 +20,7 @@ import {
   buildCatalog,
   buildStaticCatalog,
   fetchCatalog,
+  getOriginalPrice,
   getUnitPrice,
 } from "@/lib/supabaseCatalog";
 import type { CatalogData } from "@/lib/supabaseCatalog";
@@ -560,10 +559,12 @@ function HomeView({
   height,
   cards,
   onSelect,
+  contattiIndex,
 }: {
   height: number;
   cards: RuntimeHomeCard[];
   onSelect: (index: number) => void;
+  contattiIndex: number;
 }) {
   // La card centrale è quella in mezzo alla lista ordinata dall'admin
   // (in origine: SCARPE). Le altre diventano le card laterali.
@@ -614,7 +615,7 @@ function HomeView({
 
       {/* Contatti — sotto al centro, con bordo leggero da pulsante */}
       <button
-        onClick={() => onSelect(CONTATTI_INDEX)}
+        onClick={() => onSelect(contattiIndex)}
         className="clickable group relative z-30 mt-6 md:mt-12 flex items-center gap-3 rounded-full border border-white/25 bg-white/5 px-6 py-2.5 md:px-8 md:py-3 text-white/70 hover:text-white hover:border-white/60 hover:bg-white/10 transition-all duration-300 active:scale-95"
       >
         <span className="text-[11px] sm:text-xs md:text-sm uppercase font-semibold tracking-[0.3em]">
@@ -715,6 +716,15 @@ export default function Page() {
     return buildStaticCatalog();
   }, [catalogData]);
   const contact = contacts ?? CONTACT_DEFAULTS;
+
+  // Navigazione dinamica: le voci seguono le categorie del database
+  // (aggiunte/rimosse dal pannello Admin) e gli indici si ricalcolano.
+  const navItems = useMemo(
+    () => buildNavItems(categories.map((c) => ({ id: c.id, label: c.label }))),
+    [categories]
+  );
+  const navContattiIndex = navItems.length - 1;
+  const navCatalogoIndex = navItems.findIndex((n) => n.id === "catalogo");
 
   // Misura l'altezza PRIMA del primo paint (useLayoutEffect): evita il
   // frame iniziale spostato (default 800px) che si "riassesta" dopo ~1s.
@@ -994,11 +1004,11 @@ export default function Page() {
       : undefined;
 
   const currentBg =
-    viewIndex === CONTATTI_INDEX
+    viewIndex === navContattiIndex
       ? CONTATTI_BG
       : viewIndex === 0
         ? HOME_BG
-        : viewIndex === CATALOGO_INDEX
+        : viewIndex === navCatalogoIndex
           ? CATALOGO_BG
           : currentProduct?.bg ?? HOME_BG;
 
@@ -1076,7 +1086,7 @@ export default function Page() {
           {/* Con la voce extra "Catalogo Classico" il menu può diventare
               lungo: su schermi stretti scorre invece di rompere l'header */}
           <div className="hidden sm:flex items-center max-w-[60vw] overflow-x-auto no-scrollbar bg-black/20 backdrop-blur-md border border-white/10 rounded-full p-1 sm:p-1.5">
-            {NAV_ITEMS.map((n) => (
+            {navItems.map((n) => (
               <button
                 key={n.id}
                 onClick={() => setViewIndex(n.index)}
@@ -1131,7 +1141,7 @@ export default function Page() {
           ref={mobileNavRef}
           className="flex items-center gap-1 overflow-x-auto no-scrollbar rounded-full border border-white/15 bg-black/50 p-1.5 backdrop-blur-md"
         >
-          {NAV_ITEMS.map((n) => (
+          {navItems.map((n) => (
             <button
               key={n.id}
               onClick={() => setViewIndex(n.index)}
@@ -1152,22 +1162,26 @@ export default function Page() {
       <div
         className="w-full absolute top-0 left-0 flex flex-col z-20"
         style={{
-          height: viewportH * NAV_ITEMS.length,
+          height: viewportH * navItems.length,
           transform: `translateY(-${viewIndex * viewportH}px)`,
           transition: "transform 0.9s cubic-bezier(0.65, 0, 0.35, 1)",
         }}
       >
-        <HomeView height={viewportH} cards={homeCards} onSelect={setViewIndex} />
+        <HomeView
+          height={viewportH}
+          cards={homeCards}
+          onSelect={setViewIndex}
+          contattiIndex={navContattiIndex}
+        />
         {categories.map((cat, catIndex) => {
           const activeIndex = activeByCat[cat.id] ?? 0;
           const current = cat.products[activeIndex];
           if (!current) return null;
           const variant = resolveVariant(current);
-          // Sconto: un moltiplicatore < 1 (es. 0.9) mostra sul sito il prezzo
-          // originale (base) barrato accanto al prezzo scontato più grande.
-          const opt = current.variants.find((v) => v.value === variant);
-          const showOld =
-            !!opt && Number(opt.multiplier) < 1 && current.price > 0;
+          // Sconto: il prezzo originale (base × moltiplicatore taglia, prima
+          // di qualunque sconto) viene mostrato barrato accanto a quello
+          // scontato, sia per lo sconto di prodotto sia per la taglia.
+          const oldPrice = getOriginalPrice(current, variant);
           return (
             <ProductView
               key={cat.id}
@@ -1180,9 +1194,7 @@ export default function Page() {
               selectedVariant={variant}
               current={current}
               displayPrice={getUnitPrice(current, variant)}
-              oldPrice={
-                showOld ? Math.round(current.price * 100) / 100 : null
-              }
+              oldPrice={oldPrice}
               onPrev={() => navigateCarousel(cat.id, -1)}
               onNext={() => navigateCarousel(cat.id, 1)}
               onSelectVariant={(v) => selectVariant(current.id, v)}

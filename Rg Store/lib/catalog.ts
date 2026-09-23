@@ -228,29 +228,29 @@ export const CATALOG: CategoryConfig[] = [
 ];
 
 // Voci di navigazione nell'ordine delle sezioni della pagina.
-// "Catalogo Classico" è una sezione TEMPORANEA: compare solo quando
-// EXTRAS.catalogoClassico è attivo (lib/extras.ts). Gli indici sono
-// calcolati dall'ordine, così aggiungere/togliere la voce non richiede
-// altri ritocchi.
-const NAV_ENTRIES: { id: string; label: string }[] = [
-  { id: "home", label: "Home" },
-  { id: "maglie", label: "Maglie" },
-  { id: "completi", label: "Completi" },
-  { id: "pantaloni", label: "Pantaloni" },
-  ...(EXTRAS.catalogoClassico
-    ? [{ id: "catalogo", label: "Catalogo Classico" }]
-    : []),
-  { id: "contatti", label: "Contatti" },
-];
+// Le categorie arrivano dal catalogo (database o fallback statico): così
+// una categoria aggiunta/rimossa dal pannello Admin si riflette anche nel
+// menu, senza toccare il codice. "Catalogo Classico" è una sezione
+// TEMPORANEA e compare solo quando EXTRAS.catalogoClassico è attivo.
+export interface NavEntry {
+  id: string;
+  label: string;
+  index: number;
+}
 
-export const NAV_ITEMS: { id: string; label: string; index: number }[] =
-  NAV_ENTRIES.map((entry, index) => ({ ...entry, index }));
-
-/** Indice della sezione Contatti (sempre l'ultima voce). */
-export const CONTATTI_INDEX = NAV_ITEMS.length - 1;
-
-/** Indice della sezione Catalogo Classico, oppure -1 se disattivata. */
-export const CATALOGO_INDEX = NAV_ITEMS.findIndex((n) => n.id === "catalogo");
+export function buildNavItems(
+  categories: { id: string; label: string }[]
+): NavEntry[] {
+  const entries: { id: string; label: string }[] = [
+    { id: "home", label: "Home" },
+    ...categories.map((c) => ({ id: c.id, label: c.label })),
+    ...(EXTRAS.catalogoClassico
+      ? [{ id: "catalogo", label: "Catalogo Classico" }]
+      : []),
+    { id: "contatti", label: "Contatti" },
+  ];
+  return entries.map((entry, index) => ({ ...entry, index }));
+}
 
 export const CONTATTI_BG = "#101216";
 export const HOME_BG = "#0d0f12";

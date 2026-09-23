@@ -12,14 +12,13 @@ import type {
   VariantRow,
 } from "@/lib/supabase";
 
-type Tab = "home" | "maglie" | "completi" | "pantaloni" | "contatti";
+type Tab = "home" | "maglie" | "completi" | "pantaloni" | "categorie" | "contatti";
 
-const TABS: { id: Tab; label: string }[] = [
+const FIXED_TABS: { id: Tab; label: string }[] = [
   { id: "home", label: "Home" },
   { id: "maglie", label: "Maglie" },
   { id: "completi", label: "Completi" },
   { id: "pantaloni", label: "Pantaloni" },
-  { id: "contatti", label: "Contatti" },
 ];
 
 const EMPTY_CONTACT: ContactRow = {
@@ -152,6 +151,60 @@ function ImageField({
       </div>
       {msg && <p className="text-[11px] text-white/60">{msg}</p>}
     </div>
+  );
+}
+
+function DiscountField({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <label className="block space-y-1.5">
+      <span className="block text-[11px] uppercase tracking-widest text-white/50">
+        Sconto (%) — 0 = prezzo pieno
+      </span>
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          min={0}
+          max={90}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value) || 0)}
+          className="w-24 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none focus:border-amber-300/60 transition-colors"
+        />
+        {[10, 20, 30, 50].map((q) => (
+          <button
+            key={q}
+            type="button"
+            onClick={() => onChange(value === q ? 0 : q)}
+            className={`clickable rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest transition-colors ${
+              value === q
+                ? "border-amber-300/60 bg-amber-300/15 text-amber-200"
+                : "border-white/15 text-white/50 hover:text-white hover:border-white/40"
+            }`}
+          >
+            -{q}%
+          </button>
+        ))}
+        {value > 0 && (
+          <button
+            type="button"
+            onClick={() => onChange(0)}
+            className="clickable rounded-full border border-red-400/40 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-red-300 hover:bg-red-400/10 transition-colors"
+          >
+            Azzera
+          </button>
+        )}
+      </div>
+      {value > 0 && (
+        <span className="block text-[10px] uppercase tracking-widest text-amber-200/80">
+          Sul sito il prezzo pieno appare barrato accanto a quello scontato.
+        </span>
+      )}
+    </label>
   );
 }
 
@@ -547,6 +600,7 @@ function ProductsTab({
       image_url: "",
       bg_color: "#141414",
       accent_color: "#ffffff",
+      discount_percent: 0,
       available: true,
       sort_order: products.length + 1,
     });
@@ -685,6 +739,15 @@ function ProductsTab({
               value={draft.price}
               onChange={(v) => setDraft({ ...draft, price: Number(v) || 0 })}
               type="number"
+            />
+            <DiscountField
+              value={Number(draft.discount_percent) || 0}
+              onChange={(v) =>
+                setDraft({
+                  ...draft,
+                  discount_percent: Math.min(Math.max(Number(v) || 0, 0), 90),
+                })
+              }
             />
             <Field
               label="Posizione (ordinamento)"
@@ -1017,6 +1080,196 @@ function ContactsTab({
 }
 
 /* ------------------------------------------------------------------ */
+/* Categorie — aggiungi, rinomina, riordina, rimuovi                   */
+/* ------------------------------------------------------------------ */
+
+function CategoriesTab({
+  categories,
+  products,
+  onChanged,
+  onEditingChange,
+}: {
+  categories: CategoryRow[];
+  products: ProductRow[];
+  onChanged: () => void;
+  onEditingChange: (editing: boolean) => void;
+}) {
+  const [draft, setDraft] = useState<CategoryRow | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    onEditingChange(draft !== null);
+  }, [draft, onEditingChange]);
+
+  const startNew = () => {
+    setDraft({
+      id: newId("cat"),
+      label: "",
+      sort_order: categories.length + 1,
+    });
+    setMsg("");
+  };
+
+  const startEdit = (c: CategoryRow) => {
+    setDraft({ ...c });
+    setMsg("");
+  };
+
+  const cancel = () => {
+    setDraft(null);
+    setMsg("");
+  };
+
+  const save = async () => {
+    if (!draft || !supabase) return;
+    // Per una categoria nuova l'id (usato nelle sezioni del sito) deriva
+    // dal nome, senza spazi né accenti.
+    const id = draft.id.startsWith("cat_")
+      ? draft.label
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "") || newId("cat")
+      : draft.id;
+    setSaving(true);
+    setMsg("");
+    try {
+      const { error } = await supabase.from("categories").upsert({
+        ...draft,
+        id,
+        label: draft.label.trim() || "Categoria",
+      });
+      if (error) throw error;
+      setMsg("Categoria salvata ✓");
+      cancel();
+      onChanged();
+    } catch (err) {
+      setMsg(`Errore: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const remove = async (c: CategoryRow) => {
+    if (!supabase) return;
+    const count = products.filter((p) => p.category === c.id).length;
+    if (
+      !confirm(
+        count > 0
+          ? `Eliminare "${c.label}" e i suoi ${count} prodotti? L'operazione non è annullabile.`
+          : `Eliminare la categoria "${c.label}"?`
+      )
+    )
+      return;
+    // I prodotti collegati vengono rimossi a cascata dal database.
+    const { error } = await supabase.from("categories").delete().eq("id", c.id);
+    if (error) {
+      setMsg(`Errore: ${error.message}`);
+      return;
+    }
+    onChanged();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="font-anton text-xl uppercase tracking-wide text-white">
+          Categorie
+        </h2>
+        <button
+          onClick={startNew}
+          disabled={draft !== null}
+          className="clickable rounded-full bg-white px-5 py-2 text-xs font-bold uppercase tracking-widest text-black hover:bg-amber-300 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          + Aggiungi categoria
+        </button>
+      </div>
+      <p className="text-xs text-white/40">
+        Le categorie sono le sezioni del sito: il menu e la Home si aggiornano
+        da solo. Eliminarne una cancella anche i suoi prodotti.
+      </p>
+
+      {draft && (
+        <div className="space-y-4 rounded-2xl border border-amber-300/20 bg-white/[0.03] p-5">
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-amber-200">
+            {draft.id.startsWith("cat_")
+              ? "Nuova categoria"
+              : "Modifica categoria"}
+          </h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field
+              label="Nome"
+              value={draft.label}
+              onChange={(v) => setDraft({ ...draft, label: v })}
+              placeholder="Es. Felpe"
+            />
+            <Field
+              label="Posizione (ordinamento)"
+              value={draft.sort_order}
+              onChange={(v) =>
+                setDraft({ ...draft, sort_order: Number(v) || 0 })
+              }
+              type="number"
+            />
+          </div>
+          <SaveBar saving={saving} msg={msg} onSave={save} onCancel={cancel} />
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {[...categories]
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((c) => {
+            const count = products.filter((p) => p.category === c.id).length;
+            return (
+              <div
+                key={c.id}
+                className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-anton text-lg uppercase text-white">
+                    {c.label}
+                  </p>
+                  <span className="shrink-0 rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] uppercase tracking-widest text-white/60">
+                    {count} prodotti
+                  </span>
+                </div>
+                <p className="text-[10px] uppercase tracking-widest text-white/35">
+                  Posizione {c.sort_order} · id: {c.id}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => startEdit(c)}
+                    disabled={draft !== null}
+                    className="clickable flex-1 rounded-full border border-white/20 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-white/80 hover:bg-white/10 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Modifica
+                  </button>
+                  <button
+                    onClick={() => remove(c)}
+                    disabled={draft !== null}
+                    className="clickable rounded-full border border-red-400/40 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-red-300 hover:bg-red-400/10 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Elimina
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        {categories.length === 0 && (
+          <p className="text-sm text-white/40">
+            Nessuna categoria: aggiungine una per creare le sezioni del sito.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Pagina admin                                                        */
 /* ------------------------------------------------------------------ */
 
@@ -1122,8 +1375,13 @@ export default function AdminPage() {
     await supabase.auth.signOut();
   };
 
+  // Le tab prodotto sono qualunque categoria esista nel database:
+  // se l'admin ne crea una, compare anche qui come sezione editabile.
   const categoryTab =
-    tab === "maglie" || tab === "completi" || tab === "pantaloni";
+    tab !== "home" &&
+    tab !== "contatti" &&
+    tab !== "categorie" &&
+    categories.some((c) => c.id === tab);
   const currentCategory = categories.find((c) => c.id === tab) ?? null;
 
   // Cambia sezione (bloccato se c'è una modifica non salvata) e torna in cima
@@ -1182,7 +1440,11 @@ export default function AdminPage() {
         {/* Tabs */}
         <div className="mx-auto max-w-6xl px-5 pb-3">
           <div className="flex gap-2 overflow-x-auto no-scrollbar">
-            {TABS.map((t) => {
+            {[
+              ...FIXED_TABS,
+              { id: "categorie" as Tab, label: "Categorie" },
+              { id: "contatti" as Tab, label: "Contatti" },
+            ].map((t) => {
               const isCurrent = tab === t.id;
               const locked = navLocked && !isCurrent;
               return (
@@ -1225,6 +1487,14 @@ export default function AdminPage() {
             category={currentCategory}
             products={products.filter((p) => p.category === tab)}
             variants={variants}
+            onChanged={loadAll}
+            onEditingChange={setNavLocked}
+          />
+        )}
+        {tab === "categorie" && (
+          <CategoriesTab
+            categories={categories}
+            products={products}
             onChanged={loadAll}
             onEditingChange={setNavLocked}
           />

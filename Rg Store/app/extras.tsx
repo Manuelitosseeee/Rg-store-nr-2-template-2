@@ -5,7 +5,7 @@ import {
   buildClassicCatalog,
   type CatalogEntry,
 } from "@/lib/extras";
-import { getUnitPrice } from "@/lib/supabaseCatalog";
+import { getOriginalPrice, getUnitPrice } from "@/lib/supabaseCatalog";
 import type { RuntimeCategory, RuntimeProduct } from "@/lib/supabaseCatalog";
 import "./extras.css";
 
@@ -17,6 +17,10 @@ import "./extras.css";
 
 const priceOf = (product: RuntimeProduct) =>
   getUnitPrice(product, product.variants[0]?.value ?? "");
+
+// Prezzo pieno (se il prodotto è scontato) da mostrare barrato.
+const oldPriceOf = (product: RuntimeProduct) =>
+  getOriginalPrice(product, product.variants[0]?.value ?? "");
 
 /* ------------------------------------------------------------------ */
 /* Catalogo classico vero e proprio                                    */
@@ -57,7 +61,12 @@ const CatalogCard = memo(function CatalogCard({
           <p className="ct-sub">{entry.product.subtitle}</p>
         ) : null}
         <div className="ct-foot">
-          <span className="ct-price">€{priceOf(entry.product).toFixed(2)}</span>
+          <span className="ct-price">
+            {oldPriceOf(entry.product) !== null && (
+              <s className="ct-price-old">€{oldPriceOf(entry.product)!.toFixed(2)}</s>
+            )}
+            €{priceOf(entry.product).toFixed(2)}
+          </span>
           <button
             type="button"
             className="ct-btn clickable"
@@ -129,6 +138,9 @@ function CatalogModal({
           </p>
           <div className="ct-modal-row">
             <span className="ct-modal-price">
+              {oldPriceOf(entry.product) !== null && (
+                <s className="ct-price-old">€{oldPriceOf(entry.product)!.toFixed(2)}</s>
+              )}
               €{priceOf(entry.product).toFixed(2)}
             </span>
             <button

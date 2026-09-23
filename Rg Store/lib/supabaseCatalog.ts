@@ -96,6 +96,17 @@ const LAYOUT: Record<
   pantaloni: { centerScale: 1.6, boxW: 300, boxH: 420, mobileBoxW: 240, mobileBoxH: 330 },
 };
 
+const FALLBACK_LAYOUT = { centerScale: 1.55, boxW: 320, boxH: 410, mobileBoxW: 250, mobileBoxH: 320 };
+
+// Le card della Home puntano alle categorie in ordine (1ª, 2ª, 3ª):
+// funziona qualunque sia la lista di categorie del database.
+const homeCardTargetIndex = (target: string | null, position: number, total: number) => {
+  if (!target) return 0;
+  const idx = CATEGORY_INDEX[target];
+  if (idx !== undefined) return idx;
+  return Math.min(Math.max(position, 1), Math.max(total, 1));
+};
+
 const CATEGORY_INDEX: Record<string, number> = {
   maglie: 1,
   completi: 2,
@@ -174,7 +185,7 @@ export function buildCatalog(data: CatalogData): BuiltCatalog {
   const categories: RuntimeCategory[] = [...data.categories]
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((cat) => {
-      const layout = LAYOUT[cat.id] ?? LAYOUT.maglie;
+      const layout = LAYOUT[cat.id] ?? FALLBACK_LAYOUT;
       return {
         id: cat.id,
         label: cat.label,
@@ -189,13 +200,15 @@ export function buildCatalog(data: CatalogData): BuiltCatalog {
 
   const homeCards: RuntimeHomeCard[] = [...data.homeCards]
     .sort((a, b) => a.sort_order - b.sort_order)
-    .map((c) => ({
+    .map((c, position) => ({
       id: c.id,
       title: c.title,
       src: c.image_url,
-      targetIndex: c.target_category
-        ? CATEGORY_INDEX[c.target_category] ?? 1
-        : 0,
+      targetIndex: homeCardTargetIndex(
+        c.target_category,
+        position + 1,
+        data.categories.length
+      ),
       crop: false,
     }));
 
@@ -247,12 +260,36 @@ export function buildStaticCatalog(): BuiltCatalog {
 }
 
 /* ------------------------------------------------------------------ */
-/* Prezzo di una variante (prezzo base × moltiplicatore)               */
+/* Prezzi e sconti                                                     */
 /* ------------------------------------------------------------------ */
-export const getUnitPrice = (product: RuntimeProduct, variantValue: string) => {
+// Il prodotto ha un eventuale sconto globale (discount_percent) e le
+// singole taglie hanno un moltiplicatore (che può anch'esso scontare,
+// es. 0.9 = -10% su quella taglia).
+const hasProductDiscount = (product: RuntimeProduct) =>
+  Number((product as RuntimeProduct & { discount_percent?: number }).discount_percent ?? 0) > 0;
+
+export const getUnitPrice = (
+  product: RuntimeProduct,
+  variantValue: string
+) => {
   const opt =
     product.variants.find((v) => v.value === variantValue) ??
     product.variants[0];
-  if (!opt) return product.price;
-  return Math.round(product.price * opt.multiplier * 100) / 100;
+  const base = opt
+    ? product.price * opt.multiplier
+    : product.price;
+  const d = hasProductDiscount(product)
+    ? (product as RuntimeProduct & { discount_percent?: number }).discount_percent ?? 0
+    : 0;
+  return Math.round(base * (1 - d / 100) * 100) / 100;
+};
+
+/** Prezzo pieno (prima di qualunque sconto) per una variante. */
+export const getOriginalPrice = (product: RuntimeProduct, variantValue: string): number | null => {
+  const opt =
+    product.variants.find((v) => v.value === variantValue) ??
+    product.variants[0];
+  const base = opt ? product.price * opt.multiplier : product.price;
+  if (!hasProductDiscount(product) && (!opt || opt.multiplier >= 1)) return null;
+  return Math.round(base * 100) / 100;
 };

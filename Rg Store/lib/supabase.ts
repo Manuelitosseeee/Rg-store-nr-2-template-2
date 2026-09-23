@@ -39,6 +39,8 @@ export interface ProductRow {
   image_url: string;
   bg_color: string;
   accent_color: string;
+  /** Sconto in % sul prezzo base (0 = nessuno, es. 20 = -20%). */
+  discount_percent: number;
   available: boolean;
   sort_order: number;
 }

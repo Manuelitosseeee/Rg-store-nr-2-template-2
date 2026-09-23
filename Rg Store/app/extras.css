@@ -292,6 +292,19 @@
   white-space: nowrap;
 }
 
+.ct-price-old {
+  margin-right: 8px;
+  font-weight: 400;
+  color: var(--ct-muted);
+}
+
+.ct-modal-price .ct-price-old,
+.ct-modal-price s {
+  margin-right: 8px;
+  font-weight: 400;
+  color: var(--ct-muted);
+}
+
 .ct-btn {
   display: inline-flex;
   align-items: center;
